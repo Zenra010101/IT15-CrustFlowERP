@@ -1,12 +1,14 @@
-# Visual Studio
-.vs/
-vs/
-*.user
-*.suo
-
-# Build folders
+# Build results
 bin/
 obj/
 
-# Logs
-*.log
+# Visual Studio files
+.vs/
+
+# User-specific files
+*.user
+*.suo
+
+# OS files
+.DS_Store
+Thumbs.db
