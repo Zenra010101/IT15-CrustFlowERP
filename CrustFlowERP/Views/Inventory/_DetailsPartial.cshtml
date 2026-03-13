@@ -1,0 +1,112 @@
+@model CrustFlowERP.Models.Production.Inventory
+
+<div class="modal-header border-0 pb-0 shadow-sm">
+    <div class="w-100 d-flex justify-content-between align-items-center">
+        <h5 class="modal-title fw-bold" id="inventoryModalLabel">
+            <i class="fas fa-warehouse text-primary me-2"></i> Inventory Record Detail
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+</div>
+<div class="modal-body p-4 pt-5">
+    <div class="text-center mb-4">
+        <div class="bg-primary-subtle d-inline-block p-3 rounded-circle mb-3">
+            <i class="fas fa-box-open fa-2x text-primary px-1"></i>
+        </div>
+        <h3 class="fw-bold mb-1">@Model.Ingredient?.Name</h3>
+        <p class="text-muted">Batch Reference: <code class="bg-light px-2 py-1 rounded text-dark">@Model.BatchNumber</code></p>
+    </div>
+
+    <!-- Stock Metrics -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-6">
+            <div class="card border-0 bg-light p-3 h-100">
+                <small class="text-muted text-uppercase fw-bold letter-spacing-1 d-block mb-1">Current Stock</small>
+                <div class="d-flex align-items-baseline">
+                    <h2 class="fw-bold text-primary mb-0">@Model.RemainingQuantity</h2>
+                    <span class="ms-2 fw-bold text-muted">@Model.Ingredient?.Unit</span>
+                </div>
+                <div class="progress mt-2" style="height: 6px;">
+                    @{
+                        var percent = (Model.BatchQuantity > 0) ? (Model.RemainingQuantity / Model.BatchQuantity) * 100 : 0;
+                        string progressClass = percent < 20 ? "bg-danger" : "bg-primary";
+                    }
+                    <div class="progress-bar @progressClass" role="progressbar" style="width: @percent%"></div>
+                </div>
+                <small class="text-muted mt-1 small">@percent.ToString("N0")% of initial batch remaining (@Model.BatchQuantity @Model.Ingredient?.Unit)</small>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card border-0 bg-light p-3 h-100">
+                <small class="text-muted text-uppercase fw-bold letter-spacing-1 d-block mb-1">Expiration Status</small>
+                @{
+                    int daysLeft = (int)(Model.ExpirationDate.Date - DateTime.Now.Date).TotalDays;
+                    string expiryClass = daysLeft < 0 ? "text-dark" : (daysLeft < 7 ? "text-danger" : (daysLeft < 30 ? "text-warning" : "text-success"));
+                    string expiryIcon = daysLeft < 0 ? "fa-calendar-times" : (daysLeft < 7 ? "fa-exclamation-triangle" : "fa-calendar-check");
+                }
+                <div class="d-flex align-items-center @expiryClass">
+                    <i class="fas @expiryIcon fa-2x me-3"></i>
+                    <div>
+                        @if (daysLeft < 0) {
+                            <h4 class="fw-bold mb-0">Expired</h4>
+                            <small class="fw-medium text-muted">@Math.Abs(daysLeft) days ago</small>
+                        } else {
+                            <h4 class="fw-bold mb-0">@daysLeft Days Left</h4>
+                            <small class="fw-medium">Exp: @Model.ExpirationDate.ToString("MMM dd, yyyy")</small>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Partner Details -->
+    <div class="row g-3">
+        <div class="col-md-12">
+            <div class="p-3 border rounded-3 bg-white">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <div class="bg-info-subtle p-3 rounded-3">
+                            <i class="fas fa-truck text-info fa-lg"></i>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <small class="text-muted text-uppercase fw-bold d-block pb-1">Category & Supplier</small>
+                        <h6 class="fw-bold mb-0">
+                            <span class="badge bg-light text-dark fw-normal rounded-pill px-3 border me-2">@Model.Category</span>
+                            @Model.Supplier
+                        </h6>
+                    </div>
+                    <div class="col-auto text-end">
+                        <small class="text-muted d-block pb-1">Received Date</small>
+                        <span class="fw-bold small">@Model.ReceivedDate.ToString("MMM dd, yyyy")</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal-footer border-0 bg-light p-4 mt-2">
+    <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Close</button>
+    
+    @if ((Model.ExpirationDate.Date - DateTime.Now.Date).TotalDays < 0) {
+        <button type="button" class="btn btn-secondary rounded-pill px-4 shadow-sm" onclick="archiveItem(@Model.Id, '@Model.Ingredient?.Name')">
+            Archive Item <i class="fas fa-archive ms-2"></i>
+        </button>
+    } else {
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary rounded-pill px-4 shadow-sm">
+            Modify Record <i class="fas fa-edit ms-2"></i>
+        </a>
+    }
+</div>
+
+<style>
+    .bg-primary-subtle { background-color: rgba(13, 110, 253, 0.1); }
+    .bg-info-subtle { background-color: rgba(13, 202, 240, 0.1); }
+    .letter-spacing-1 { letter-spacing: 0.5px; }
+    .modal-footer .btn { 
+        font-size: 0.9rem; 
+        font-weight: 600; 
+        padding: 0.5rem 1.5rem;
+    }
+</style>

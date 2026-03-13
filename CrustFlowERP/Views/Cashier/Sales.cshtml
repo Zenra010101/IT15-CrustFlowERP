@@ -1,0 +1,178 @@
+@{
+    ViewData["Title"] = "Sales";
+}
+
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="page-title-box">
+                <h3>New Sale</h3>
+                <p>Process customer orders and payments.</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row g-4">
+        <!-- Order Form -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-bottom-0 py-3">
+                    <h5 class="card-title mb-0 fw-bold">Order Details</h5>
+                </div>
+                <div class="card-body">
+                    <form>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Customer Name</label>
+                                <input type="text" class="form-control" placeholder="Enter customer name">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Phone Number</label>
+                                <input type="tel" class="form-control" placeholder="Enter phone number">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Add Items</label>
+                            <div class="input-group mb-2">
+                                <input type="text" class="form-control" placeholder="Search products...">
+                                <button class="btn btn-outline-secondary" type="button">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Order Items -->
+                        <div class="table-responsive mb-4">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>Price</th>
+                                        <th>Quantity</th>
+                                        <th>Total</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Pizza Margherita</td>
+                                        <td>₱12.99</td>
+                                        <td>2</td>
+                                        <td>₱25.98</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-danger" type="button">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Payment Method</label>
+                                <select class="form-select">
+                                    <option value="">Select payment method</option>
+                                    <option value="cash">Cash</option>
+                                    <option value="gcash">G-Cash</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Order Notes</label>
+                                <textarea class="form-control" rows="2" placeholder="Special instructions..."></textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="mb-0">Total: <span class="text-primary fw-bold">₱25.98</span></h5>
+                            </div>
+                            <div>
+                                <button type="button" class="btn btn-outline-secondary me-2">Clear</button>
+                                <button type="submit" class="btn btn-admin-primary">Process Sale</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Products -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-bottom-0 py-3">
+                    <h5 class="card-title mb-0 fw-bold">Quick Products</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <button class="btn btn-outline-primary w-100 h-100">
+                                <i class="fas fa-pizza-slice mb-2"></i>
+                                <div>Pizza</div>
+                            </button>
+                        </div>
+                        <div class="col-6">
+                            <button class="btn btn-outline-success w-100 h-100">
+                                <i class="fas fa-hamburger mb-2"></i>
+                                <div>Burger</div>
+                            </button>
+                        </div>
+                        <div class="col-6">
+                            <button class="btn btn-outline-info w-100 h-100">
+                                <i class="fas fa-glass-water mb-2"></i>
+                                <div>Drinks</div>
+                            </button>
+                        </div>
+                        <div class="col-6">
+                            <button class="btn btn-outline-warning w-100 h-100">
+                                <i class="fas fa-ice-cream mb-2"></i>
+                                <div>Desserts</div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Logout function
+function logoutUser() {
+    console.log('Attempting logout...');
+    
+    // Method 1: Try to submit the hidden form first
+    const logoutForm = document.getElementById('logoutForm');
+    if (logoutForm) {
+        try {
+            logoutForm.submit();
+            console.log('Logout form submitted successfully');
+            return;
+        } catch (error) {
+            console.error('Error submitting logout form:', error);
+        }
+    }
+    
+    // Method 2: Direct fetch to AccountController Logout
+    fetch('/Account/Logout', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+        }
+    })
+    .then(response => {
+        console.log('Logout response:', response);
+        // Always redirect to login page, regardless of response
+        window.location.href = '/Account/Login';
+    })
+    .catch(error => {
+        console.error('Error during logout:', error);
+        // Even if there's an error, redirect to login page
+        window.location.href = '/Account/Login';
+    });
+}
+</script>

@@ -1,0 +1,656 @@
+@using Microsoft.AspNetCore.Http
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - CrustFlowERP Admin</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    
+    <style>
+        /* Admin-specific sidebar styles */
+        .admin-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        .admin-sidebar {
+            width: 250px;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+        }
+
+        .admin-sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .admin-sidebar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .admin-sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+        }
+
+        .admin-sidebar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+        
+        .admin-content {
+            margin-left: 250px;
+            flex: 1;
+            background: #f8f9fa;
+            min-height: 100vh;
+            transition: margin-left 0.3s ease;
+        }
+        
+        @@media (max-width: 992px) {
+            .admin-sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .admin-sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .admin-content {
+                margin-left: 0;
+            }
+        }
+        
+        @@media (max-width: 768px) {
+            .admin-sidebar {
+                width: 280px;
+            }
+        }
+        
+        @@media (max-width: 576px) {
+            .admin-sidebar {
+                width: 100%;
+            }
+        }
+        
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .sidebar-brand {
+            color: white;
+            text-decoration: none;
+            font-size: 1.2rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+        }
+        
+        @@media (max-width: 768px) {
+            .sidebar-brand {
+                font-size: 1.1rem;
+            }
+        }
+        
+        @@media (max-width: 576px) {
+            .sidebar-brand {
+                font-size: 1rem;
+            }
+        }
+        
+        .sidebar-brand i {
+            margin-right: 10px;
+        }
+        
+        .menu-item small {
+            font-size: 0.7rem;
+            letter-spacing: 1px;
+        }
+        
+        @@media (max-width: 768px) {
+            .menu-item small {
+                font-size: 0.65rem;
+            }
+        }
+        
+        .menu-link {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+        
+        @@media (max-width: 768px) {
+            .menu-link {
+                padding: 10px 15px;
+            }
+        }
+        
+        @@media (max-width: 576px) {
+            .menu-link {
+                padding: 8px 12px;
+            }
+        }
+        
+        .menu-link:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .menu-link.active {
+            color: white;
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .menu-icon {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        @@media (max-width: 768px) {
+            .menu-icon {
+                margin-right: 8px;
+                width: 18px;
+            }
+        }
+        
+        .mobile-toggle {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1001;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px;
+            cursor: pointer;
+        }
+        
+        @@media (max-width: 992px) {
+            .mobile-toggle {
+                display: block;
+            }
+        }
+        
+        .content-header {
+            background: white;
+            padding: 20px;
+            border-bottom: 1px solid #e9ecef;
+            margin-bottom: 20px;
+        }
+        
+        @@media (max-width: 768px) {
+            .content-header {
+                padding: 15px;
+                margin-bottom: 15px;
+            }
+        }
+        
+        @@media (max-width: 576px) {
+            .content-header {
+                padding: 10px;
+                margin-bottom: 10px;
+            }
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        @@media (max-width: 576px) {
+            .user-info {
+                gap: 5px;
+            }
+        }
+        
+        .user-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: #28a745;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        @@media (max-width: 768px) {
+            .user-avatar {
+                width: 30px;
+                height: 30px;
+                font-size: 0.8rem;
+            }
+        }
+        
+        @@media (max-width: 576px) {
+            .user-avatar {
+                width: 25px;
+                height: 25px;
+                font-size: 0.7rem;
+            }
+        }
+        
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+        
+        @@media (max-width: 992px) {
+            .overlay.active {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="mobile-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <div class="overlay" onclick="toggleSidebar()"></div>
+    
+    <div class="admin-wrapper">
+        <!-- Admin Sidebar -->
+        <nav class="admin-sidebar" id="sidebar">
+            @{
+                var roleId_session = Context.Session.GetInt32("UserRole");
+                var roleId = roleId_session ?? 8;
+
+                if (roleId_session == null && User.Identity?.IsAuthenticated == true)
+                {
+                    if (User.IsInRole("SuperAdmin")) roleId = 1;
+                    else if (User.IsInRole("Admin")) roleId = 2;
+                    else if (User.IsInRole("Production Manager")) roleId = 3;
+                    else if (User.IsInRole("Production Staff")) roleId = 4;
+                    else if (User.IsInRole("Quality Control Staff")) roleId = 5;
+                    else if (User.IsInRole("Warehouse Staff")) roleId = 6;
+                    else if (User.IsInRole("Purchasing Officer")) roleId = 7;
+                    else if (User.IsInRole("Cashier")) roleId = 8;
+                    else if (User.IsInRole("Sales Manager")) roleId = 9;
+                    else if (User.IsInRole("Accountant")) roleId = 10;
+                    else if (User.IsInRole("Manager")) roleId = 11;
+                }
+
+                var isProductionRole = roleId == 3 || roleId == 4 || roleId == 5;
+                var sidebarBrand = isProductionRole ? "Production Hub" : "CrustFlow Panel";
+                var sidebarGradient = isProductionRole 
+                    ? "linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%)" // Blue for Production
+                    : "linear-gradient(135deg, #28a745 0%, #20c997 100%)"; // Green for Admin
+
+                var dashboardController = roleId switch
+                {
+                    1 => "SuperAdmin",
+                    2 => "Admin",
+                    3 => "ProductionManager",
+                    4 => "ProductionStaff",
+                    5 => "QualityControl",
+                    6 => "Warehouse",
+                    7 => "Purchasing",
+                    8 => "Cashier",
+                    9 => "SalesManager",
+                    10 => "Accountant",
+                    11 => "Manager",
+                    _ => "Account"
+                };
+                
+                var dashboardAction = "Index";
+                if (dashboardController == "Account") dashboardAction = "Login";
+                
+                var dashboardUrl = Url.Action(dashboardAction, dashboardController);
+            }
+
+            <style>
+                .admin-sidebar { background: @sidebarGradient !important; }
+            </style>
+
+            <div class="sidebar-header">
+                <a class="sidebar-brand" href="@dashboardUrl">
+                    <i class="fas @(isProductionRole ? "fa-industry" : "fa-chart-line")"></i> 
+                    <span class="d-none d-sm-inline">@sidebarBrand</span>
+                </a>
+            </div>
+
+            <ul class="sidebar-menu">
+                <li class="menu-item">
+                    <a class="menu-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == dashboardController && ViewContext.RouteData.Values["Action"]?.ToString() == "Index" ? "active" : "")" href="@dashboardUrl">
+                        <span class="menu-icon"><i class="fas fa-home"></i></span>
+                        Dashboard
+                    </a>
+                </li>
+                
+                @if (roleId <= 2) // SuperAdmin and Admin manage users
+                {
+                    <li class="menu-item">
+                        <small class="text-uppercase text-white-50 px-4 mt-3 mb-2 d-block" style="font-size: 0.75rem; letter-spacing: 1px;">System Administration</small>
+                    </li>
+                    <li class="menu-item">
+                        <a class="menu-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "UserManagement" ? "active" : "")" asp-controller="Admin" asp-action="UserManagement">
+                            <span class="menu-icon"><i class="fas fa-user-shield"></i></span>
+                            User Management
+                        </a>
+                    </li>
+                }
+
+                @if (roleId == 2 || roleId == 11) // Admin (non-super) or Manager handles HR
+                {
+                    <li class="menu-item">
+                        <small class="text-uppercase text-white-50 px-4 mt-3 mb-2 d-block" style="font-size: 0.75rem; letter-spacing: 1px;">Human Resources (HR)</small>
+                    </li>
+                    
+                    <li class="menu-item">
+                        <a class="menu-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "HR" && ViewContext.RouteData.Values["Action"]?.ToString() == "Employees" ? "active" : "")" asp-controller="HR" asp-action="Employees">
+                            <span class="menu-icon"><i class="fas fa-id-card"></i></span>
+                            Employee Profiles
+                        </a>
+                    </li>
+
+                    <li class="menu-item">
+                        <a class="menu-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "HR" && ViewContext.RouteData.Values["Action"]?.ToString() == "Attendance" ? "active" : "")" asp-controller="HR" asp-action="Attendance">
+                            <span class="menu-icon"><i class="fas fa-user-clock"></i></span>
+                            Attendance
+                        </a>
+                    </li>
+
+                    <li class="menu-item">
+                        <a class="menu-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "HR" && ViewContext.RouteData.Values["Action"]?.ToString() == "Payroll" ? "active" : "")" asp-controller="HR" asp-action="Payroll">
+                            <span class="menu-icon"><i class="fas fa-hand-holding-usd"></i></span>
+                            Payroll
+                        </a>
+                    </li>
+                }
+                
+
+                @if (roleId <= 6 || roleId == 11) // Up to Warehouse Staff or Manager
+                {
+                    <li class="menu-item">
+                        <small class="text-uppercase text-white-50 px-4 mt-3 mb-2 d-block" style="font-size: 0.75rem; letter-spacing: 1px;">Production and Manufacturing</small>
+                    </li>
+
+                    <li class="menu-item">
+                        <a class="menu-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Products" ? "active" : "")" asp-controller="Products" asp-action="Index">
+                            <span class="menu-icon"><i class="fas fa-bread-slice"></i></span>
+                            Products
+                        </a>
+                    </li>
+
+                    <li class="menu-item">
+                        <a class="menu-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Recipes" ? "active" : "")" asp-controller="Recipes" asp-action="Index">
+                            <span class="menu-icon"><i class="fas fa-utensils"></i></span>
+                            Recipes
+                        </a>
+                    </li>
+
+                    <li class="menu-item">
+                        <a class="menu-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Ingredients" ? "active" : "")" asp-controller="Ingredients" asp-action="Index">
+                            <span class="menu-icon"><i class="fas fa-seedling"></i></span>
+                            Ingredients
+                        </a>
+                    </li>
+
+                    <li class="menu-item">
+                        <a class="menu-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Inventory" ? "active" : "")" asp-controller="Inventory" asp-action="Index">
+                            <span class="menu-icon"><i class="fas fa-boxes"></i></span>
+                            Inventory
+                        </a>
+                    </li>
+
+                    @if (roleId >= 3 && roleId <= 5 || roleId == 11) // Production roles or Manager only
+                    {
+                        <li class="menu-item">
+                            <a class="menu-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "ProductionOrders" ? "active" : "")" asp-controller="ProductionOrders" asp-action="Index">
+                                <span class="menu-icon"><i class="fas fa-clipboard-list"></i></span>
+                                Production Orders
+                            </a>
+                        </li>
+                    }
+                }
+
+                @if (roleId <= 3 || roleId == 11 || roleId == 7 || roleId == 6) // Admin, Manager, Prod Manager, Purchasing, Warehouse
+                {
+                    <li class="menu-item">
+                        <small class="text-uppercase text-white-50 px-4 mt-3 mb-2 d-block" style="font-size: 0.75rem; letter-spacing: 1px;">Supplies</small>
+                    </li>
+
+                    <li class="menu-item">
+                        <a class="menu-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Suppliers" ? "active" : "")" asp-controller="Suppliers" asp-action="Index">
+                            <span class="menu-icon"><i class="fas fa-truck-loading"></i></span>
+                            Suppliers
+                        </a>
+                    </li>
+
+                    <li class="menu-item">
+                        <a class="menu-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Purchasing" && ViewContext.RouteData.Values["Action"]?.ToString() == "PurchaseOrders" ? "active" : "")" asp-controller="Purchasing" asp-action="PurchaseOrders">
+                            <span class="menu-icon"><i class="fas fa-file-invoice-dollar"></i></span>
+                            Purchase Orders
+                        </a>
+                    </li>
+                }
+
+                @if (roleId <= 2 || roleId == 9) // SuperAdmin, Admin, Sales Manager
+                {
+                    <li class="menu-item">
+                        <small class="text-uppercase text-white-50 px-4 mt-3 mb-2 d-block" style="font-size: 0.75rem; letter-spacing: 1px;">Sales Management</small>
+                    </li>
+
+                    <li class="menu-item">
+                        <a class="menu-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Customers" ? "active" : "")" asp-controller="Customers" asp-action="Index">
+                            <span class="menu-icon"><i class="fas fa-user-friends"></i></span>
+                            Customers
+                        </a>
+                    </li>
+                }
+
+                @if (roleId == 1 || roleId == 11 || roleId == 10) // SuperAdmin, Manager, Accountant
+                {
+                    <li class="menu-item">
+                        <small class="text-uppercase text-white-50 px-4 mt-3 mb-2 d-block" style="font-size: 0.75rem; letter-spacing: 1px;">Finance</small>
+                    </li>
+
+                    <li class="menu-item">
+                        <a class="menu-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Accountant" && ViewContext.RouteData.Values["Action"]?.ToString() == "COGS" ? "active" : "")" asp-controller="Accountant" asp-action="COGS">
+                            <span class="menu-icon"><i class="fas fa-tags"></i></span>
+                            COGS Analysis
+                        </a>
+                    </li>
+
+                    <li class="menu-item">
+                        <a class="menu-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Accountant" && ViewContext.RouteData.Values["Action"]?.ToString() == "Payroll" ? "active" : "")" asp-controller="Accountant" asp-action="Payroll">
+                            <span class="menu-icon"><i class="fas fa-money-check-alt"></i></span>
+                            Payroll Processing
+                        </a>
+                    </li>
+
+                    <li class="menu-item">
+                        <a class="menu-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Accountant" && ViewContext.RouteData.Values["Action"]?.ToString() == "ExpensesProfits" ? "active" : "")" asp-controller="Accountant" asp-action="ExpensesProfits">
+                            <span class="menu-icon"><i class="fas fa-coins"></i></span>
+                            Expenses & Profits
+                        </a>
+                    </li>
+
+                    <li class="menu-item">
+                        <a class="menu-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Accountant" && ViewContext.RouteData.Values["Action"]?.ToString() == "FinancialReports" ? "active" : "")" asp-controller="Accountant" asp-action="FinancialReports">
+                            <span class="menu-icon"><i class="fas fa-file-invoice-dollar"></i></span>
+                            Financial Reports
+                        </a>
+                    </li>
+                }
+                
+                @if (roleId == 1) // SuperAdmin only
+                {
+                    <li class="menu-item">
+                        <small class="text-uppercase text-white-50 px-4 mt-3 mb-2 d-block" style="font-size: 0.75rem; letter-spacing: 1px;">SaaS Management</small>
+                    </li>
+                    <li class="menu-item">
+                        <a class="menu-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Subscriptions" ? "active" : "")" asp-controller="SuperAdmin" asp-action="Subscriptions">
+                            <span class="menu-icon"><i class="fas fa-money-bill-wave"></i></span>
+                            Subscriptions
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a class="menu-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Payments" ? "active" : "")" asp-controller="SuperAdmin" asp-action="Payments">
+                            <span class="menu-icon"><i class="fas fa-receipt"></i></span>
+                            Payments
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <small class="text-uppercase text-white-50 px-4 mt-3 mb-2 d-block" style="font-size: 0.75rem; letter-spacing: 1px;">System</small>
+                    </li>
+                    
+                    <li class="menu-item">
+                        <a class="menu-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Logs" ? "active" : "")" asp-controller="SuperAdmin" asp-action="Logs">
+                            <span class="menu-icon"><i class="fas fa-file-alt"></i></span>
+                            Logs
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a class="menu-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Settings" ? "active" : "")" asp-controller="Admin" asp-action="Settings">
+                            <span class="menu-icon"><i class="fas fa-cogs"></i></span>
+                            Settings
+                        </a>
+                    </li>
+                }
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="admin-content">
+            <!-- Top Header -->
+            <header class="content-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <div class="user-info">
+                            <div class="user-avatar">
+                                @if (!string.IsNullOrEmpty(Context.Session.GetString("UserEmail")) && Context.Session.GetString("UserEmail")?.Length >= 2)
+                                {
+                                    @Context.Session.GetString("UserEmail")?.Substring(0, 2).ToUpper()
+                                }
+                                else
+                                {
+                                    <span>AD</span>
+                                }
+                            </div>
+                            <div class="d-none d-md-block">
+                                <div class="fw-bold">@((roleId == 1 || roleId == 2) ? "Administrator" : Context.Session.GetString("UserRoleName"))</div>
+                                <small class="text-muted">@Context.Session.GetString("UserEmail")</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="dropdown">
+                            <a class="text-dark text-decoration-none dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-user-circle"></i>
+                                <span class="d-none d-md-inline ms-2">Account</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="#"><i class="fas fa-user-circle me-2"></i> Profile</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="#" onclick="logoutUser()"><i class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Hidden Logout Form -->
+            <form id="logoutForm" asp-controller="Account" asp-action="Logout" method="post" style="display: none;">
+                <input type="hidden" name="__RequestVerificationToken" value="@Html.AntiForgeryToken()" />
+            </form>
+
+            <!-- Page Content -->
+            <main class="p-3 p-lg-4">
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        @TempData["SuccessMessage"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+                
+                @RenderBody()
+            </main>
+            
+            <footer class="text-center py-3 text-muted border-top bg-white">
+                <small>&copy; @DateTime.Now.Year - CrustFlowERP Admin Console</small>
+            </footer>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.querySelector('.overlay');
+            
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+        
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.querySelector('.overlay');
+            const toggle = document.querySelector('.mobile-toggle');
+            
+            if (window.innerWidth <= 992 && 
+                !sidebar.contains(event.target) && 
+                !toggle.contains(event.target) && 
+                sidebar.classList.contains('active')) {
+                sidebar.classList.remove('active');
+                overlay.classList.remove('active');
+            }
+        });
+        
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.querySelector('.overlay');
+            
+            if (window.innerWidth > 992) {
+                sidebar.classList.remove('active');
+                overlay.classList.remove('active');
+            }
+        });
+
+        // Logout function
+        function logoutUser() {
+            if (confirm("Are you sure you want to logout?")) {
+                const logoutForm = document.getElementById('logoutForm');
+                if (logoutForm) {
+                    logoutForm.submit();
+                } else {
+                    window.location.href = '/Account/Logout';
+                }
+            }
+        }
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

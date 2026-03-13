@@ -1,0 +1,168 @@
+@model CrustFlowERP.Models.Production.Product
+@{
+    ViewData["Title"] = "Manage Recipe";
+    Layout = "~/Views/Shared/_AdminSidebarLayout.cshtml";
+    var availableIngredients = ViewBag.Ingredients as IEnumerable<CrustFlowERP.Models.Production.Ingredient>;
+}
+
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <div class="page-title-box">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a asp-action="Index">Recipes</a></li>
+                        <li class="breadcrumb-item active">@Model.Name</li>
+                    </ol>
+                </nav>
+                <h3 class="mb-0 fw-bold">Recipe for @Model.Name</h3>
+                <p class="text-muted">Edit ingredients and proportions for this product form.</p>
+            </div>
+            <div>
+                <a asp-action="Index" class="btn btn-outline-secondary rounded-pill px-4 me-2">
+                    <i class="fas fa-arrow-left me-2"></i> Back to List
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Add Ingredient Card -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm mb-4" style="border-radius: 15px;">
+                <div class="card-header bg-white py-3 border-0">
+                    <h5 class="mb-0 fw-bold"><i class="fas fa-plus-circle me-2 text-success"></i> Add Formula Item</h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="AddIngredient" method="post">
+                        <input type="hidden" name="productId" value="@Model.Id" />
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-dark">Select Ingredient</label>
+                            <select name="ingredientId" class="form-select border-1 bg-white shadow-sm fw-bold text-dark" required style="border-radius: 10px; height: 50px;">
+                                <option value="">-- Choose Ingredient --</option>
+                                @foreach (var ing in availableIngredients!)
+                                {
+                                    <option value="@ing.Id">@ing.Name (@ing.Unit)</option>
+                                }
+                            </select>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-dark">Quantity Required</label>
+                            <div class="input-group shadow-sm">
+                                <input type="number" name="quantity" step="0.0001" class="form-control border-1 bg-white fw-bold text-dark fs-5" placeholder="0.0000" required style="border-radius: 10px 0 0 10px; height: 60px; padding-left: 15px;">
+                                <span class="input-group-text bg-light border-1 fw-bold text-muted" style="border-radius: 0 10px 10px 0; min-width: 80px; justify-content: center;">Units</span>
+                            </div>
+                            <small class="text-muted">Specify the amount per production unit.</small>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success rounded-pill py-2 fw-bold shadow-sm">
+                                <i class="fas fa-save me-2"></i> Save Ingredient
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Product Summary Context Card -->
+            <div class="card border-0 shadow-sm bg-primary text-white" style="border-radius: 15px;">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-3"><i class="fas fa-info-circle me-2"></i> Product Info</h5>
+                    <div class="d-flex mb-3 align-items-center p-3 rounded" style="background: rgba(255, 255, 255, 0.1);">
+                        <div class="bg-white p-2 rounded me-3">
+                            <i class="fas fa-box text-primary"></i>
+                        </div>
+                        <div>
+                            <div class="small opacity-75">Category</div>
+                            <div class="fw-bold fs-5">@Model.Category</div>
+                        </div>
+                    </div>
+                    <div class="d-flex mb-0 align-items-center p-3 rounded" style="background: rgba(255, 255, 255, 0.1);">
+                        <div class="bg-white p-2 rounded me-3">
+                            <i class="fas fa-dollar-sign text-primary px-1"></i>
+                        </div>
+                        <div>
+                            <div class="small opacity-75">Unit Price</div>
+                            <div class="fw-bold fs-5">$@Model.Price.ToString("N2")</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recipe Content List -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm h-100" style="border-radius: 15px;">
+                <div class="card-header bg-white py-3 border-0">
+                    <h5 class="mb-0 fw-bold"><i class="fas fa-list-check me-2 text-primary"></i> Current Recipe Elements</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light text-uppercase small letter-spacing-1">
+                                <tr>
+                                    <th class="ps-4">Ingredient Name</th>
+                                    <th>Quantity</th>
+                                    <th>Unit Cost (Ref)</th>
+                                    <th class="text-end pe-4">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.Recipes != null && Model.Recipes.Any())
+                                {
+                                    foreach (var recipe in Model.Recipes)
+                                    {
+                                        <tr>
+                                            <td class="ps-4">
+                                                <div class="fw-bold text-dark">@recipe.Ingredient?.Name</div>
+                                                <small class="text-muted">@recipe.Ingredient?.Description</small>
+                                            </td>
+                                            <td>
+                                                <div class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill fw-bold">
+                                                    @recipe.QuantityRequired @recipe.Ingredient?.Unit
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="text-muted font-monospace">--</span>
+                                            </td>
+                                            <td class="text-end pe-4">
+                                                <form asp-action="RemoveIngredient" method="post" onsubmit="return confirm('Remove @recipe.Ingredient?.Name from this recipe?')">
+                                                    <input type="hidden" name="id" value="@recipe.Id" />
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger rounded-circle p-2 shadow-sm" style="width: 35px; height: 35px;">
+                                                        <i class="fas fa-trash-alt"></i>
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="4" class="text-center py-5">
+                                            <div class="bg-light p-4 rounded-3 d-inline-block shadow-inner mb-3">
+                                                <i class="fas fa-mortar-pestle fa-4x text-muted opacity-25"></i>
+                                            </div>
+                                            <h5 class="text-muted">No Ingredients Added</h5>
+                                            <p class="text-muted small">Start adding components to build the formula for this product.</p>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .font-monospace { font-family: 'Courier New', Courier, monospace; }
+    .bg-primary-subtle { background-color: rgba(13, 110, 253, 0.1); }
+    .letter-spacing-1 { letter-spacing: 0.5px; }
+    .card-body h5 { color: #333; }
+</style>

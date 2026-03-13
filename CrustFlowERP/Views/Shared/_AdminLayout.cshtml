@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - CrustFlowERP Admin</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    
+    <style>
+        /* Responsive admin layout */
+        .admin-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        .admin-sidebar {
+            width: 250px;
+            background: linear-gradient(135deg, #8b5a2b 0%, #a0522d 100%);
+            min-height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+        }
+        
+        .admin-content {
+            margin-left: 250px;
+            flex: 1;
+            background: #f8f9fa;
+            min-height: 100vh;
+            transition: margin-left 0.3s ease;
+        }
+        
+        @@media (max-width: 992px) {
+            .admin-sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .admin-sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .admin-content {
+                margin-left: 0;
+            }
+        }
+        
+        @@media (max-width: 768px) {
+            .admin-sidebar {
+                width: 280px;
+            }
+        }
+        
+        @@media (max-width: 576px) {
+            .admin-sidebar {
+                width: 100%;
+            }
+        }
+        
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        @@media (max-width: 768px) {
+            .sidebar-header {
+                padding: 15px;
+            }
+        }
+        
+        .sidebar-brand {
+            color: white;
+            text-decoration: none;
+            font-size: 1.2rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+        }
+        
+        @@media (max-width: 768px) {
+            .sidebar-brand {
+                font-size: 1.1rem;
+            }
+        }
+        
+        @@media (max-width: 576px) {
+            .sidebar-brand {
+                font-size: 1rem;
+            }
+        }
+        
+        .sidebar-brand i {
+            margin-right: 10px;
+        }
+        
+        .menu-item small {
+            font-size: 0.7rem;
+            letter-spacing: 1px;
+        }
+        
+        @@media (max-width: 768px) {
+            .menu-item small {
+                font-size: 0.65rem;
+            }
+        }
+        
+        .menu-link {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+        
+        @@media (max-width: 768px) {
+            .menu-link {
+                padding: 10px 15px;
+            }
+        }
+        
+        @@media (max-width: 576px) {
+            .menu-link {
+                padding: 8px 12px;
+            }
+        }
+        
+        .menu-link:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .menu-link.active {
+            color: white;
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .menu-icon {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        @@media (max-width: 768px) {
+            .menu-icon {
+                margin-right: 8px;
+                width: 18px;
+            }
+        }
+        
+        .mobile-toggle {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1001;
+            background: #8b5a2b;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px;
+            cursor: pointer;
+        }
+        
+        @@media (max-width: 992px) {
+            .mobile-toggle {
+                display: block;
+            }
+        }
+        
+        .content-header {
+            background: white;
+            padding: 20px;
+            border-bottom: 1px solid #e9ecef;
+            margin-bottom: 20px;
+        }
+        
+        @@media (max-width: 768px) {
+            .content-header {
+                padding: 15px;
+                margin-bottom: 15px;
+            }
+        }
+        
+        @@media (max-width: 576px) {
+            .content-header {
+                padding: 10px;
+                margin-bottom: 10px;
+            }
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        @@media (max-width: 576px) {
+            .user-info {
+                gap: 5px;
+            }
+        }
+        
+        .user-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: #8b5a2b;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        @@media (max-width: 768px) {
+            .user-avatar {
+                width: 30px;
+                height: 30px;
+                font-size: 0.8rem;
+            }
+        }
+        
+        @@media (max-width: 576px) {
+            .user-avatar {
+                width: 25px;
+                height: 25px;
+                font-size: 0.7rem;
+            }
+        }
+        
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+        
+        @@media (max-width: 992px) {
+            .overlay.active {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="mobile-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <div class="overlay" onclick="toggleSidebar()"></div>
+    
+    <div class="admin-wrapper">
+        <!-- Sidebar -->
+        <nav class="admin-sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <a class="sidebar-brand" asp-controller="SuperAdmin" asp-action="Index">
+                    <i class="fas fa-chart-pie"></i> <span class="d-none d-sm-inline">CrustFlowERP</span>
+                </a>
+            </div>
+            
+            <ul class="sidebar-menu">
+                <li class="menu-item">
+                    <a class="menu-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Index" ? "active" : "")" asp-controller="SuperAdmin" asp-action="Index">
+                        <span class="menu-icon"><i class="fas fa-home"></i></span>
+                        Dashboard
+                    </a>
+                </li>
+                
+                <li class="menu-item">
+                    <small class="text-uppercase text-white-50 px-4 mt-3 mb-2 d-block" style="font-size: 0.75rem; letter-spacing: 1px;">User Management</small>
+                </li>
+                
+                <li class="menu-item">
+                    <a class="menu-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Users" ? "active" : "")" asp-controller="SuperAdmin" asp-action="Users">
+                        <span class="menu-icon"><i class="fas fa-users"></i></span>
+                        Users
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a class="menu-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Roles" ? "active" : "")" asp-controller="SuperAdmin" asp-action="Roles">
+                        <span class="menu-icon"><i class="fas fa-user-shield"></i></span>
+                        Roles & Permissions
+                    </a>
+                </li>
+                
+                @if (ViewBag.UserRole != "SuperAdmin")
+                {
+                    <li class="menu-item">
+                        <small class="text-uppercase text-white-50 px-4 mt-3 mb-2 d-block" style="font-size: 0.75rem; letter-spacing: 1px;">Human Resources</small>
+                    </li>
+                    <li class="menu-item">
+                        <a class="menu-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "HR" && ViewContext.RouteData.Values["Action"]?.ToString() == "Employees" ? "active" : "")" asp-controller="HR" asp-action="Employees">
+                            <span class="menu-icon"><i class="fas fa-id-card"></i></span>
+                            Employee Profiles
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a class="menu-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "HR" && ViewContext.RouteData.Values["Action"]?.ToString() == "Attendance" ? "active" : "")" asp-controller="HR" asp-action="Attendance">
+                            <span class="menu-icon"><i class="fas fa-calendar-check"></i></span>
+                            Attendance
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a class="menu-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "HR" && ViewContext.RouteData.Values["Action"]?.ToString() == "Payroll" ? "active" : "")" asp-controller="HR" asp-action="Payroll">
+                            <span class="menu-icon"><i class="fas fa-money-check-dollar"></i></span>
+                            Payroll
+                        </a>
+                    </li>
+                }
+
+                @if (ViewBag.UserRole == "SuperAdmin")
+                {
+                    <li class="menu-item">
+                        <small class="text-uppercase text-white-50 px-4 mt-3 mb-2 d-block" style="font-size: 0.75rem; letter-spacing: 1px;">SaaS Management</small>
+                    </li>
+                    
+                    <li class="menu-item">
+                        <a class="menu-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Subscriptions" ? "active" : "")" asp-controller="SuperAdmin" asp-action="Subscriptions">
+                            <span class="menu-icon"><i class="fas fa-money-bill-wave"></i></span>
+                            Subscriptions
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a class="menu-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Payments" ? "active" : "")" asp-controller="SuperAdmin" asp-action="Payments">
+                            <span class="menu-icon"><i class="fas fa-receipt"></i></span>
+                            Payments
+                        </a>
+                    </li>
+                }
+
+                <li class="menu-item">
+                    <small class="text-uppercase text-white-50 px-4 mt-3 mb-2 d-block" style="font-size: 0.75rem; letter-spacing: 1px;">System</small>
+                </li>
+                
+                <li class="menu-item">
+                    <a class="menu-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Logs" ? "active" : "")" asp-controller="SuperAdmin" asp-action="Logs">
+                        <span class="menu-icon"><i class="fas fa-file-alt"></i></span>
+                        Logs
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="admin-content">
+            <!-- Top Header -->
+            <header class="content-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <div class="user-info">
+                            <div class="user-avatar">
+                                @if (!string.IsNullOrEmpty(ViewBag.UserEmail as string) && ((string)ViewBag.UserEmail).Length >= 2)
+                                {
+                                    @ViewBag.UserEmail.ToString().Substring(0, 2).ToUpper()
+                                }
+                                else
+                                {
+                                    <span>SA</span>
+                                }
+                            </div>
+                            <div class="d-none d-md-block">
+                                <div class="fw-bold">@ViewBag.UserRole</div>
+                                <small class="text-muted">@ViewBag.UserEmail</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex align-items-center gap-3">
+                        <button class="btn btn-outline-danger btn-sm" onclick="logoutUser()" title="Logout">
+                            <i class="fas fa-sign-out-alt me-2"></i> Logout
+                        </button>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Hidden Logout Form -->
+            <form id="logoutForm" asp-controller="Account" asp-action="Logout" method="post" style="display: none;">
+                <input type="hidden" name="__RequestVerificationToken" value="@Html.AntiForgeryToken()" />
+            </form>
+
+            <!-- Page Content -->
+            <main class="p-3 p-lg-4">
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        @TempData["SuccessMessage"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+                
+                @RenderBody()
+            </main>
+            
+            <footer class="text-center py-3 text-muted border-top bg-white">
+                <small>&copy; @DateTime.Now.Year - CrustFlowERP Admin Console</small>
+            </footer>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.querySelector('.overlay');
+            
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+        
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.querySelector('.overlay');
+            const toggle = document.querySelector('.mobile-toggle');
+            
+            if (window.innerWidth <= 992 && 
+                !sidebar.contains(event.target) && 
+                !toggle.contains(event.target) && 
+                sidebar.classList.contains('active')) {
+                sidebar.classList.remove('active');
+                overlay.classList.remove('active');
+            }
+        });
+        
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.querySelector('.overlay');
+            
+            if (window.innerWidth > 992) {
+                sidebar.classList.remove('active');
+                overlay.classList.remove('active');
+            }
+        });
+
+        // Logout function
+        function logoutUser() {
+            if (confirm("Are you sure you want to logout?")) {
+                const logoutForm = document.getElementById('logoutForm');
+                if (logoutForm) {
+                    logoutForm.submit();
+                } else {
+                    window.location.href = '/Account/Logout';
+                }
+            }
+        }
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

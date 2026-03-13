@@ -1,0 +1,434 @@
+@model List<CrustFlowERP.Models.Tenant>
+@{
+    ViewData["Title"] = "Business Subscriptions";
+    Layout = "_AdminLayout";
+}
+
+@{
+    // Constants for pricing as requested
+    const int RegistrationFee = 2000; // Standard base registration fee
+    
+    // Revenue calculation logic
+    var paidTenants = Model?.Where(t => t.IsPaid).ToList() ?? new List<CrustFlowERP.Models.Tenant>();
+    
+    int GetTierValue(CrustFlowERP.Models.CompanyTier tier) => tier switch {
+        CrustFlowERP.Models.CompanyTier.MicroCompany => 3000,
+        CrustFlowERP.Models.CompanyTier.SmallCompany => 5000,
+        CrustFlowERP.Models.CompanyTier.MediumCompany => 8000,
+        _ => 0
+    };
+
+    var totalRevenue = paidTenants.Sum(t => RegistrationFee + GetTierValue(t.DatabaseName));
+}
+
+<div class="container-fluid py-4">
+    <!-- Super Admin SaaS Management Header -->
+    <div class="row align-items-center mb-4">
+        <div class="col-md-7">
+            <h1 class="h3 fw-bold text-brown mb-1"><i class="fas fa-gem me-2"></i>SaaS Management</h1>
+            <p class="text-muted">Global oversight of business tenants, billing, and system health.</p>
+        </div>
+        <div class="col-md-5 text-md-end">
+            <button class="btn btn-warning shadow-sm" onclick="syncSchemas()">
+                <i class="fas fa-sync-alt me-1"></i> Sync Schemas
+            </button>
+            <button class="btn btn-primary shadow-sm ms-2" data-bs-toggle="modal" data-bs-target="#addTenantModal">
+                <i class="fas fa-plus me-1"></i> Register Business
+            </button>
+        </div>
+    </div>
+
+
+    <hr class="my-5 opacity-10">
+
+    <!-- The requested table section -->
+    <div id="subscriptions-list">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="fw-bold mb-0 text-dark"><i class="fas fa-list-check me-2 text-primary"></i>Business Subscription</h4>
+            <div class="nav nav-pills" id="tenantTabs" role="tablist">
+                <button class="nav-link active small" id="active-tab" data-bs-toggle="tab" data-bs-target="#active-tenants" type="button" role="tab">Active</button>
+                <button class="nav-link small ms-2" id="archived-tab" data-bs-toggle="tab" data-bs-target="#archived-tenants" type="button" role="tab">Archive</button>
+            </div>
+        </div>
+
+        <div class="tab-content" id="tenantTabsContent">
+            <!-- Active Tenants Tab -->
+            <div class="tab-pane fade show active" id="active-tenants" role="tabpanel">
+                <div class="card shadow-sm border-0 overflow-hidden">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="ps-4">ID</th>
+                                        <th>Business Details</th>
+                                        <th>Status</th>
+                                        <th>Subscription</th>
+                                        <th>Payment & Fee</th>
+                                        <th>Expiry</th>
+                                        <th>Registered</th>
+                                        <th class="text-end pe-4">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (Model != null && Model.Any(t => !t.IsArchived))
+                                    {
+                                        foreach (var tenant in Model.Where(t => !t.IsArchived))
+                                        {
+                                var tierValue = GetTierValue(tenant.DatabaseName);
+                                var totalFee = RegistrationFee + tierValue;
+
+                                <tr class="@(tenant.IsArchived ? "opacity-50 grayscale" : "")">
+                                    <td class="ps-4 text-muted font-monospace">#@tenant.TenantId</td>
+                                    <td>
+                                        <div class="fw-bold text-primary">@tenant.BusinessName</div>
+                                        <div class="small text-muted">@tenant.DatabaseName.ToString().Replace("Company", " Company")</div>
+                                    </td>
+                                    <td>
+                                        @if (tenant.IsArchived)
+                                        {
+                                            <span class="badge bg-secondary rounded-pill px-3">Archived</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-success rounded-pill px-3">Active</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-soft-info text-info">@tenant.SubscriptionType</span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex flex-column">
+                                            @if (tenant.IsPaid)
+                                            {
+                                                <span class="text-success fw-bold"><i class="fas fa-check-circle me-1"></i> Paid ₱@(totalFee.ToString("N0"))</span>
+                                                <small class="text-muted xs">(@RegistrationFee Reg + @tierValue Tier)</small>
+                                            }
+                                            else
+                                            {
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <span class="text-danger fw-bold"><i class="fas fa-clock me-1"></i> Unpaid (₱@(totalFee.ToString("N0")))</span>
+                                                    <button class="btn btn-xs btn-outline-success py-0 px-2" style="font-size: 0.65rem;" onclick="markAsPaid(@tenant.TenantId)">
+                                                        Collect
+                                                    </button>
+                                                </div>
+                                            }
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @if (tenant.NextDueDate.HasValue)
+                                        {
+                                            var isExpired = tenant.NextDueDate.Value < DateTime.Now;
+                                            var isDueSoon = !isExpired && tenant.NextDueDate.Value < DateTime.Now.AddDays(7);
+                                            <div class="d-flex flex-column">
+                                                <span class="@(isExpired ? "text-danger fw-bold" : isDueSoon ? "text-warning fw-bold" : "text-dark")">
+                                                    @tenant.NextDueDate.Value.ToString("MMM dd, yyyy")
+                                                </span>
+                                                @if (isExpired) { <small class="text-danger xs">EXPIRED</small> }
+                                                else if (isDueSoon) { <small class="text-warning xs">DUE SOON</small> }
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted small">Not Set</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="small text-muted">@tenant.CreatedAt.ToString("MMM dd, yyyy HH:mm")</div>
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        <div class="btn-group">
+                                            @if (tenant.IsPaid && tenant.NextDueDate.HasValue && tenant.NextDueDate.Value < DateTime.Now.AddDays(7))
+                                            {
+                                                <button class="btn btn-sm btn-success border-0 me-1" title="Renew Subscription" onclick="renewSubscription(@tenant.TenantId)">
+                                                    <i class="fas fa-redo me-1"></i> Renew
+                                                </button>
+                                            }
+                                            <button class="btn btn-sm @(tenant.IsArchived ? "btn-warning" : "btn-outline-warning") border-0" 
+                                                    title="@(tenant.IsArchived ? "Unarchive Tenant" : "Archive Tenant")"
+                                                    onclick="archiveTenant(@tenant.TenantId)">
+                                                <i class="fas @(tenant.IsArchived ? "fa-box-open" : "fa-box-archive")"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <td colspan="7" class="text-center py-5">
+                                                <div class="text-muted">
+                                                    <i class="fas fa-building fa-2x mb-2 opacity-25"></i>
+                                                    <p>No active business tenants.</p>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Archived Tenants Tab -->
+            <div class="tab-pane fade" id="archived-tenants" role="tabpanel">
+                <div class="card shadow-sm border-0 overflow-hidden">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="ps-4">ID</th>
+                                        <th>Business Details</th>
+                                        <th>Status</th>
+                                        <th>Subscription</th>
+                                        <th>Payment & Fee</th>
+                                        <th>Registered</th>
+                                        <th class="text-end pe-4">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (Model != null && Model.Any(t => t.IsArchived))
+                                    {
+                                        foreach (var tenant in Model.Where(t => t.IsArchived))
+                                        {
+                                            var tierValue = GetTierValue(tenant.DatabaseName);
+                                            var totalFee = RegistrationFee + tierValue;
+
+                                            <tr class="opacity-75 grayscale">
+                                                <td class="ps-4 text-muted font-monospace">#@tenant.TenantId</td>
+                                                <td>
+                                                    <div class="fw-bold text-secondary">@tenant.BusinessName</div>
+                                                    <div class="small text-muted">@tenant.DatabaseName.ToString().Replace("Company", " Company")</div>
+                                                </td>
+                                                <td>
+                                                    <span class="badge bg-secondary rounded-pill px-3">Archived</span>
+                                                </td>
+                                                <td>
+                                                    <span class="badge bg-soft-info text-info">@tenant.SubscriptionType</span>
+                                                </td>
+                                                <td>
+                                                    <div class="text-muted small">₱@(totalFee.ToString("N0"))</div>
+                                                </td>
+                                                <td>
+                                                    <div class="small text-muted">@tenant.CreatedAt.ToString("MMM dd, yyyy HH:mm")</div>
+                                                </td>
+                                                <td class="text-end pe-4">
+                                                    <button class="btn btn-sm btn-outline-warning border-0" 
+                                                            title="Unarchive Tenant"
+                                                            onclick="archiveTenant(@tenant.TenantId)">
+                                                        <i class="fas fa-box-open"></i> Restore
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <td colspan="7" class="text-center py-5">
+                                                <div class="text-muted p-4">
+                                                    <i class="fas fa-box-archive fa-2x mb-2 opacity-25"></i>
+                                                    <p>Your archive is empty.</p>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!-- Add Tenant Modal -->
+<div class="modal fade" id="addTenantModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow">
+            <form asp-action="CreateTenant" method="post">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold">Register New Tenant</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="row g-3">
+                        <div class="col-md-12">
+                            <label class="form-label fw-bold">Business Name</label>
+                            <input type="text" name="BusinessName" class="form-control" placeholder="e.g. CrustFlow Bakery HQ" required>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Company Tier</label>
+                            <select name="DatabaseName" id="tierSelect" class="form-select" required>
+                                <option value="">-- Select Tier --</option>
+                                <option value="1">Micro Company (Tier 1)</option>
+                                <option value="2">Small Company (Tier 2)</option>
+                                <option value="3">Medium Company (Tier 3)</option>
+                            </select>
+                            <small class="text-muted">Select the scale of the business operation.</small>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Database Identifier</label>
+                            <select id="dbIdentifierSelect" class="form-select" onchange="updateConnectionString()">
+                                <option value="">-- Choose Template --</option>
+                                @if (ViewBag.DatabaseNames != null)
+                                {
+                                    foreach (var db in ViewBag.DatabaseNames)
+                                    {
+                                        <option value="@db.Value" data-name="@db.Key">@db.Key</option>
+                                    }
+                                }
+                            </select>
+                            <small class="text-muted">Select a pre-configured database template.</small>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Subscription Type</label>
+                            <select name="SubscriptionType" class="form-select" required>
+                                <option value="1">Daily</option>
+                                <option value="2" selected>Monthly</option>
+                                <option value="3">Yearly</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Initial Expiry (Optional)</label>
+                            <input type="date" name="NextDueDate" class="form-control" />
+                            <small class="text-muted">Will be auto-set on payment if empty.</small>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-bold">Database Connection String</label>
+                            <textarea name="ConnectionString" id="connectionStringInput" class="form-control" rows="3" placeholder="Server=...;Database=...;User Id=...;Password=...;" required></textarea>
+                            <small class="text-muted">Provide the dedicated SQL connection string for this tenant.</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light px-4 py-3">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary px-4">Initialize Business</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function updateConnectionString() {
+        const select = document.getElementById('dbIdentifierSelect');
+        const connInput = document.getElementById('connectionStringInput');
+        const tierSelect = document.getElementById('tierSelect');
+        
+        const selectedOption = select.options[select.selectedIndex];
+        const connString = selectedOption.value;
+        const dbName = selectedOption.getAttribute('data-name');
+        
+        if (connString) {
+            connInput.value = connString;
+            
+            // Auto-detect tier based on name
+            if (dbName.includes("Micro")) tierSelect.value = "1";
+            else if (dbName.includes("Small")) tierSelect.value = "2";
+            else if (dbName.includes("Medium")) tierSelect.value = "3";
+        }
+    }
+
+    async function syncSchemas() {
+        if (!confirm('This will ensure all company databases (Micro, Small, Medium) have the required columns for Identity and Multitenancy. This is safe to run. Proceed?')) return;
+        
+        const btn = event.currentTarget;
+        const originalText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Syncing...';
+
+        try {
+            const response = await fetch('/SuperAdmin/SyncTenantSchemas', { 
+                method: 'POST',
+                headers: {
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+                }
+            });
+            const data = await response.json();
+            if (data.success) {
+                alert('Schema synchronization completed:\n' + data.logs.join('\n'));
+            } else {
+                alert('Error: ' + data.message);
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Failed to connect to server. Make sure the application is running.');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+    }
+
+    async function archiveTenant(id) {
+        if (!confirm('Are you sure you want to change the status of this business?')) return;
+        
+        try {
+            const response = await fetch(`/SuperAdmin/ArchiveTenant/${id}`, { method: 'POST' });
+            const data = await response.json();
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Failed to update tenant status.');
+        }
+    }
+
+    async function markAsPaid(id) {
+        if (!confirm('Confirm that payment has been received for this business registration?')) return;
+        
+        try {
+            const response = await fetch(`/SuperAdmin/MarkAsPaid/${id}`, { method: 'POST' });
+            const data = await response.json();
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Failed to update payment status.');
+        }
+    }
+
+    async function renewSubscription(id) {
+        if (!confirm('Confirm that renewal payment has been received? This will extend the business subscription.')) return;
+        
+        try {
+            const response = await fetch(`/SuperAdmin/RenewSubscription/${id}`, { method: 'POST' });
+            const data = await response.json();
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Failed to process renewal.');
+        }
+    }
+</script>
+
+<style>
+    .grayscale {
+        filter: grayscale(100%);
+    }
+    .btn-xs {
+        padding: 0.1rem 0.3rem;
+        font-size: 0.75rem;
+    }
+    .badge-soft-success { background-color: #d1e7dd; color: #0f5132; }
+    .badge-soft-info { background-color: #cff4fc; color: #055160; }
+    .badge-soft-warning { background-color: #fff3cd; color: #664d03; }
+</style>

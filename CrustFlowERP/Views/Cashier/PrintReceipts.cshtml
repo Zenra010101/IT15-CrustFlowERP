@@ -1,0 +1,180 @@
+@model IEnumerable<CrustFlowERP.Models.Sales.Sale>
+@{
+    ViewData["Title"] = "Print Receipts";
+}
+
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="display-6 fw-bold"><i class="fas fa-print me-2 text-primary"></i>Transaction History</h2>
+            <p class="text-muted">Browse past sales and reprint customer receipts.</p>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card-header bg-white py-3 border-0">
+            <div class="input-group" style="max-width: 400px;">
+                <span class="input-group-text bg-light border-end-0"><i class="fas fa-search text-muted"></i></span>
+                <input type="text" id="receiptSearch" class="form-control bg-light border-start-0" placeholder="Search Transaction ID...">
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-4 py-3">Transaction ID</th>
+                            <th>Date & Time</th>
+                            <th>Processed By</th>
+                            <th>Amount</th>
+                            <th>Payment</th>
+                            <th>Items</th>
+                            <th class="text-end pe-4">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="receiptTableBody">
+                        @if (!Model.Any())
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center py-5 text-muted">
+                                    <i class="fas fa-receipt fa-3x mb-3 opacity-25"></i>
+                                    <p class="mb-0">No transactions found in records.</p>
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var sale in Model)
+                            {
+                                <tr>
+                                    <td class="ps-4 py-3 fw-bold text-primary">#SALE-@sale.Id.ToString().PadLeft(5, '0')</td>
+                                    <td>@sale.SaleDate.ToString("MMM dd, yyyy HH:mm")</td>
+                                    <td>
+                                        <div class="small fw-bold">@(sale.Cashier?.Email ?? "System")</div>
+                                    </td>
+                                    <td class="fw-bold">₱@sale.TotalAmount.ToString("N2")</td>
+                                    <td>
+                                        <span class="badge @(sale.PaymentMethod == "Cash" ? "bg-success" : "bg-info") bg-opacity-10 @(sale.PaymentMethod == "Cash" ? "text-success" : "text-info") px-3 py-2 rounded-pill">
+                                            @sale.PaymentMethod
+                                        </span>
+                                    </td>
+                                    <td>@sale.SaleDetails.Count items</td>
+                                    <td class="text-end pe-4">
+                                        <button class="btn btn-outline-primary btn-sm rounded-pill px-3" 
+                                                onclick='showSaleDetails(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(sale, new System.Text.Json.JsonSerializerOptions { ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles })))'>
+                                            <i class="fas fa-eye me-1"></i> Details
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Details Modal -->
+<div class="modal fade" id="detailsModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header bg-primary text-white py-3 border-0">
+                <h5 class="modal-title fw-bold">Sale Details</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4" id="modalContent">
+                <!-- Content injected via JS -->
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary rounded-pill px-4" onclick="window.print()">
+                    <i class="fas fa-print me-2"></i>Reprint
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function showSaleDetails(sale) {
+        const date = new Date(sale.SaleDate).toLocaleString();
+        const content = `
+            <div class="text-center mb-4">
+                <h4 class="fw-bold mb-1">CRUSTFLOW BAKERY</h4>
+                <p class="text-muted small mb-0">Daily Freshness, Baked with Love</p>
+                <hr class="my-3 border-dashed">
+            </div>
+            <div class="row g-2 mb-4">
+                <div class="col-6">
+                    <p class="small text-muted mb-0">Transaction ID</p>
+                    <p class="fw-bold mb-0">#SALE-${sale.Id.toString().padStart(5, '0')}</p>
+                </div>
+                <div class="col-6 text-end">
+                    <p class="small text-muted mb-0">Processed By</p>
+                    <p class="small fw-bold mb-0">${sale.Cashier ? sale.Cashier.Email : 'System'}</p>
+                </div>
+            </div>
+            
+            <table class="table table-sm table-borderless align-middle mb-4">
+                <thead class="border-bottom">
+                    <tr class="text-muted small">
+                        <th>Product</th>
+                        <th class="text-center">Qty</th>
+                        <th class="text-end">Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${sale.SaleDetails.map(d => `
+                        <tr>
+                            <td class="pt-2">
+                                <p class="mb-0 fw-bold small">${d.Product ? d.Product.Name : 'Unknown Product'}</p>
+                                <p class="mb-0 text-muted smaller">₱${d.UnitPrice.toFixed(2)} / unit</p>
+                            </td>
+                            <td class="text-center pt-2">${d.Quantity}</td>
+                            <td class="text-end pt-2 fw-bold">₱${d.Subtotal.toFixed(2)}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+            
+            <hr class="my-3 border-dashed">
+            
+            <div class="d-flex justify-content-between mb-2">
+                <span class="text-muted">Payment Method:</span>
+                <span class="fw-bold">${sale.PaymentMethod}</span>
+            </div>
+            <div class="d-flex justify-content-between h5 fw-bold text-primary mt-3">
+                <span>TOTAL AMOUNT:</span>
+                <span>₱${sale.TotalAmount.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span>
+            </div>
+            
+            <div class="text-center mt-5">
+                <p class="small text-muted mb-0 font-monospace">Thank you for your business!</p>
+            </div>
+        `;
+        
+        document.getElementById('modalContent').innerHTML = content;
+        new bootstrap.Modal(document.getElementById('detailsModal')).show();
+    }
+
+    // Search Filtering
+    document.getElementById('receiptSearch').addEventListener('input', function(e) {
+        const term = e.target.value.toLowerCase();
+        const rows = document.querySelectorAll('#receiptTableBody tr');
+        rows.forEach(row => {
+            const id = row.cells[0]?.textContent.toLowerCase() || "";
+            row.style.display = id.includes(term) ? "" : "none";
+        });
+    });
+</script>
+
+<style>
+    .border-dashed { border-top: 1px dashed #dee2e6; }
+    .smaller { font-size: 0.75rem; }
+    @@media print {
+        body * { visibility: hidden; }
+        #modalContent, #modalContent * { visibility: visible; }
+        #modalContent { position: absolute; left: 0; top: 0; width: 100%; border: none !important; }
+    }
+</style>

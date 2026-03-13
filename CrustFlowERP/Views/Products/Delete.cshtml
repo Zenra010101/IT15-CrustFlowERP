@@ -1,0 +1,58 @@
+@model CrustFlowERP.Models.Production.Product
+
+@{
+    ViewData["Title"] = "Delete Product";
+    Layout = "_AdminSidebarLayout";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-action="Index">Product Catalog</a></li>
+                    <li class="breadcrumb-item active">Delete</li>
+                </ol>
+            </nav>
+            <h2 class="fw-bold">Delete Product</h2>
+            <p class="text-muted text-danger">Warning: This action cannot be undone</p>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="bg-danger p-4 text-center text-white">
+                    <i class="fas fa-exclamation-triangle fa-4x mb-3 animate-bounce"></i>
+                    <h3 class="fw-bold mb-0">Are you sure?</h3>
+                </div>
+                <div class="card-body p-4">
+                    <p class="text-center mb-4">You are about to delete <strong>@Model.Name</strong> from the product catalog. This may affect production orders and recipes linked to this product.</p>
+                    
+                    <div class="bg-light p-3 rounded-4 mb-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted small fw-bold text-uppercase">Product Name</span>
+                            <span class="fw-bold">@Model.Name</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted small fw-bold text-uppercase">Category</span>
+                            <span class="fw-bold">@Model.Category</span>
+                        </div>
+                    </div>
+
+                    <form asp-action="Delete" method="post">
+                        <input type="hidden" asp-for="Id" />
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-danger rounded-pill py-3 fw-bold shadow-sm">
+                                <i class="fas fa-trash-alt me-2"></i> Yes, Delete Product
+                            </button>
+                            <a asp-action="Index" class="btn btn-outline-secondary rounded-pill py-3 fw-bold">
+                                No, Keep Product
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

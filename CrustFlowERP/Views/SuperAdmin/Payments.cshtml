@@ -1,0 +1,92 @@
+@model IEnumerable<CrustFlowERP.Models.TenantPayment>
+@{
+    ViewData["Title"] = "System Payments";
+    Layout = "_AdminLayout";
+    var tenants = ViewBag.Tenants as Dictionary<int, string> ?? new Dictionary<int, string>();
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">System Revenue & Payments</h2>
+            <p class="text-muted small mb-0">Track all subscription and registration fees collected from business tenants.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <div class="bg-white p-3 rounded shadow-sm border-start border-primary border-4">
+                <small class="text-muted d-block">Total Revenue</small>
+                <span class="h4 fw-bold text-primary mb-0">₱@Model.Sum(p => p.Amount).ToString("N2")</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-white py-3">
+            <h5 class="mb-0 fw-bold"><i class="fas fa-history me-2 text-primary"></i>Transaction History</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">Transaction ID</th>
+                            <th>Date</th>
+                            <th>Business Tenant</th>
+                            <th>Amount</th>
+                            <th>Method</th>
+                            <th class="pe-4">Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            foreach (var payment in Model)
+                            {
+                                <tr>
+                                    <td class="ps-4 font-monospace small">#@payment.Id.ToString("D5")</td>
+                                    <td>
+                                        <div class="fw-bold">@payment.PaymentDate.ToString("MMM dd, yyyy")</div>
+                                        <small class="text-muted">@payment.PaymentDate.ToString("hh:mm tt")</small>
+                                    </td>
+                                    <td>
+                                        <div class="fw-bold text-dark">@(tenants.ContainsKey(payment.TenantId) ? tenants[payment.TenantId] : "Unknown Tenant")</div>
+                                        <small class="text-muted">ID: @payment.TenantId</small>
+                                    </td>
+                                    <td>
+                                        <span class="fw-bold text-success">₱@payment.Amount.ToString("N2")</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-soft-info text-info">@payment.PaymentMethod</span>
+                                    </td>
+                                    <td class="pe-4">
+                                        <small class="text-muted">@payment.Remarks</small>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center py-5">
+                                    <div class="text-muted">
+                                        <i class="fas fa-receipt fa-3x mb-3 opacity-25"></i>
+                                        <p>No transactions recorded yet.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-soft-info {
+        background-color: rgba(13, 202, 240, 0.1);
+    }
+    .badge {
+        font-weight: 500;
+        padding: 0.5em 0.8em;
+    }
+</style>

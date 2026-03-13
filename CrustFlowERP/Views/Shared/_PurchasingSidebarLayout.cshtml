@@ -1,0 +1,434 @@
+@using Microsoft.AspNetCore.Http
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - CrustFlow Purchasing</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --purchasing-primary: #4e73df;
+            --purchasing-secondary: #224abe;
+            --purchasing-bg: #f4f7fe;
+            --sidebar-width: 260px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--purchasing-bg);
+        }
+
+        /* Purchasing-specific sidebar styles */
+        .purchasing-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        .purchasing-sidebar {
+            width: var(--sidebar-width);
+            background: linear-gradient(180deg, var(--purchasing-primary) 0%, var(--purchasing-secondary) 100%);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 1000;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-y: auto;
+            box-shadow: 4px 0 15px rgba(0,0,0,0.1);
+        }
+
+        .purchasing-sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .purchasing-sidebar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .purchasing-sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+        }
+        
+        .purchasing-content {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            min-height: 100vh;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        @@media (max-width: 992px) {
+            .purchasing-sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .purchasing-sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .purchasing-content {
+                margin-left: 0;
+            }
+        }
+        
+        .sidebar-header {
+            padding: 30px 25px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .sidebar-brand {
+            color: white;
+            text-decoration: none;
+            font-size: 1.25rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .sidebar-brand i {
+            font-size: 1.8rem;
+            margin-right: 12px;
+            color: #bac8ff;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+        }
+        
+        .sidebar-menu {
+            list-style: none;
+            padding: 15px 0;
+            margin: 0;
+        }
+
+        .menu-item {
+            margin: 4px 15px;
+        }
+
+        .menu-link {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            padding: 12px 18px;
+            display: flex;
+            align-items: center;
+            border-radius: 10px;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .menu-link:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+        
+        .menu-link.active {
+            color: white;
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            font-weight: 700;
+        }
+        
+        .menu-icon {
+            margin-right: 12px;
+            width: 24px;
+            text-align: center;
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .content-header {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 15px 30px;
+            border-bottom: 1px solid #e3e6f0;
+            position: sticky;
+            top: 0;
+            z-index: 900;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.05);
+        }
+        
+        .user-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--purchasing-primary) 0%, var(--purchasing-secondary) 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            box-shadow: 0 4px 8px rgba(78, 115, 223, 0.3);
+            font-size: 1.1rem;
+        }
+
+        .section-label {
+            color: rgba(255, 255, 255, 0.45);
+            font-size: 0.65rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            padding: 20px 25px 8px;
+            letter-spacing: 1.5px;
+        }
+
+        .mobile-toggle {
+            display: none;
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            z-index: 1001;
+            background: var(--purchasing-primary);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 56px;
+            height: 56px;
+            box-shadow: 0 6px 16px rgba(78, 115, 223, 0.4);
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .mobile-toggle:active {
+            transform: scale(0.9);
+        }
+        
+        @@media (max-width: 992px) {
+            .mobile-toggle {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(3px);
+            z-index: 999;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .overlay.active {
+            display: block;
+            opacity: 1;
+        }
+
+        .search-bar {
+            background: #f8f9fc;
+            border: 1px solid #e3e6f0;
+            border-radius: 10px;
+            padding: 8px 15px;
+            width: 280px;
+            display: flex;
+            align-items: center;
+            transition: all 0.2s;
+        }
+
+        .search-bar:focus-within {
+            border-color: var(--purchasing-primary);
+            box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.1);
+            background: white;
+        }
+
+        .search-bar input {
+            border: none;
+            background: transparent;
+            outline: none;
+            padding: 0 10px;
+            width: 100%;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <button class="mobile-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <div class="purchasing-wrapper">
+        <!-- Purchasing Sidebar -->
+        <nav class="purchasing-sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <a class="sidebar-brand" asp-controller="Purchasing" asp-action="Index">
+                    <i class="fas fa-shopping-bag"></i> <span>CrustFlow PO</span>
+                </a>
+            </div>
+            
+            <ul class="sidebar-menu">
+                <li class="section-label">Overview</li>
+                <li class="menu-item">
+                    <a class="menu-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Purchasing" && ViewContext.RouteData.Values["Action"]?.ToString() == "Index" ? "active" : "")" asp-controller="Purchasing" asp-action="Index">
+                        <span class="menu-icon"><i class="fas fa-chart-line"></i></span>
+                        Dashboard
+                    </a>
+                </li>
+                
+                <li class="section-label">Operations</li>
+                <li class="menu-item">
+                    <a class="menu-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Suppliers" ? "active" : "")" asp-controller="Suppliers" asp-action="Index">
+                        <span class="menu-icon"><i class="fas fa-truck"></i></span>
+                        Suppliers
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a class="menu-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Purchasing" && (ViewContext.RouteData.Values["Action"]?.ToString() == "Wastage" || ViewContext.RouteData.Values["Action"]?.ToString() == "RecordWastage") ? "active" : "")" asp-controller="Purchasing" asp-action="Wastage">
+                        <span class="menu-icon"><i class="fas fa-trash-can"></i></span>
+                        Wastage & Spoilage
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a class="menu-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Purchasing" && ViewContext.RouteData.Values["Action"]?.ToString() == "PurchaseOrders" ? "active" : "")" asp-controller="Purchasing" asp-action="PurchaseOrders">
+                        <span class="menu-icon"><i class="fas fa-file-invoice-dollar"></i></span>
+                        Purchase Orders
+                    </a>
+                </li>
+
+                <li class="section-label">Inventory</li>
+                <li class="menu-item">
+                    <a class="menu-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Ingredients" ? "active" : "")" asp-controller="Ingredients" asp-action="Index">
+                        <span class="menu-icon"><i class="fas fa-wheat-awn"></i></span>
+                        Ingredients
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a class="menu-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Inventory" ? "active" : "")" asp-controller="Inventory" asp-action="Index">
+                        <span class="menu-icon"><i class="fas fa-warehouse"></i></span>
+                        Warehouse Stock
+                    </a>
+                </li>
+
+                <li class="section-label">Account</li>
+                <li class="menu-item">
+                    <a class="menu-link text-warning-emphasis" href="#" onclick="logoutUser()">
+                        <span class="menu-icon"><i class="fas fa-power-off"></i></span>
+                        Sign Out
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="purchasing-content">
+            <header class="content-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center gap-4">
+                        <div class="d-none d-lg-flex">
+                            <div class="search-bar">
+                                <i class="fas fa-search text-muted small"></i>
+                                <input type="text" placeholder="Global search...">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex align-items-center gap-4">
+                        <div class="d-flex align-items-center gap-2">
+                             <div class="dropdown">
+                                <button class="btn btn-link link-dark text-decoration-none p-2 border-0" type="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-bell position-relative">
+                                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-circle bg-danger p-1 border border-light" style="font-size: 0.4rem;">
+                                            <span class="visually-hidden">unread alerts</span>
+                                        </span>
+                                    </i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-3 p-0 overflow-hidden" style="width: 320px; border-radius: 15px;">
+                                    <li class="p-3 bg-light border-bottom"><h6 class="mb-0 fw-bold">Recent Alerts</h6></li>
+                                    <li class="p-4 text-center">
+                                        <i class="fas fa-check-circle text-success opacity-25 fa-3x mb-3"></i>
+                                        <p class="text-muted small mb-0">System is looking good. No pending alerts for today.</p>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="dropdown">
+                            <div class="d-flex align-items-center gap-3 cursor-pointer" data-bs-toggle="dropdown">
+                                <div class="d-none d-md-block text-end">
+                                <div class="fw-bold text-dark small" style="line-height: 1.2;">@(Context.Session.GetString("UserRoleName") ?? "Purchasing Officer")</div>
+                                <small class="text-muted" style="font-size: 0.7rem;">@Context.Session.GetString("UserEmail")</small>
+                                </div>
+                                <div class="user-avatar shadow-sm">
+                                    @if (!string.IsNullOrEmpty(Context.Session.GetString("UserEmail")))
+                                    {
+                                        @(Context.Session.GetString("UserEmail")?.Substring(0, 1).ToUpper() ?? "PO")
+                                    }
+                                    else
+                                    {
+                                        <span>PO</span>
+                                    }
+                                </div>
+                            </div>
+                            <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-3 p-2" style="border-radius: 12px; min-width: 200px;">
+                                <li><a class="dropdown-item rounded-3 py-2" href="#"><i class="fas fa-user-circle me-3 opacity-50"></i>My Profile</a></li>
+                                <li><a class="dropdown-item rounded-3 py-2" href="#"><i class="fas fa-cog me-3 opacity-50"></i>Settings</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item rounded-3 py-2 text-danger" href="#" onclick="logoutUser()"><i class="fas fa-sign-out-alt me-3"></i>Logout</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Hidden Logout Form -->
+            <form id="logoutForm" asp-controller="Account" asp-action="Logout" method="post" style="display: none;">
+                @Html.AntiForgeryToken()
+            </form>
+
+            <main class="p-4">
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show rounded-4 border-0 shadow-sm mb-4 p-3" role="alert">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-check-circle me-3 fs-4"></i> 
+                            <div>@TempData["SuccessMessage"]</div>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+                @RenderBody()
+            </main>
+            
+            <footer class="mt-auto py-4 px-5 text-center text-muted small border-top bg-white bg-opacity-50">
+                &copy; @DateTime.Now.Year - CrustFlow PO Console | Procurement & Inventory System
+            </footer>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+        
+        function logoutUser() {
+            if(confirm('Are you sure you want to sign out from the PO module?')) {
+                document.getElementById('logoutForm').submit();
+            }
+        }
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

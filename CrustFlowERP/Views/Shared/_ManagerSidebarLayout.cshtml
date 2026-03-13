@@ -1,0 +1,292 @@
+@using Microsoft.AspNetCore.Http
+@using CrustFlowERP.Models
+@{
+    var roleId = Context.Session.GetInt32("UserRole") ?? 0;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - CrustFlow Manager</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <style>
+        :root {
+            --manager-sidebar-width: 260px;
+            --manager-primary: #4e73df;
+            --manager-dark: #2e59d9;
+        }
+
+        body {
+            background-color: #f8f9fc;
+            overflow-x: hidden;
+        }
+
+        .manager-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styling */
+        .manager-sidebar {
+            width: var(--manager-sidebar-width);
+            background: linear-gradient(180deg, var(--manager-primary) 0%, var(--manager-dark) 100%);
+            color: white;
+            transition: all 0.3s;
+            position: fixed;
+            height: 100vh;
+            z-index: 1000;
+            box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar-brand {
+            color: white;
+            text-decoration: none;
+            font-size: 1.25rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+        }
+
+        .menu-header {
+            padding: 10px 25px;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: rgba(255,255,255,0.4);
+            letter-spacing: 1px;
+        }
+
+        .menu-item {
+            margin: 2px 15px;
+        }
+
+        .menu-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .menu-link:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .menu-link.active {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .menu-icon {
+            width: 25px;
+            margin-right: 12px;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        /* Content Styling */
+        .manager-content {
+            flex: 1;
+            margin-left: var(--manager-sidebar-width);
+            background: #f8f9fc;
+            padding: 0;
+            min-height: 100vh;
+        }
+
+        .content-header {
+            background: white;
+            padding: 15px 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 900;
+        }
+
+        .user-dropdown .dropdown-toggle::after {
+            display: none;
+        }
+
+        .user-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: var(--manager-primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        @@media (max-width: 992px) {
+            .manager-sidebar {
+                margin-left: calc(-1 * var(--manager-sidebar-width));
+            }
+            .manager-sidebar.active {
+                margin-left: 0;
+            }
+            .manager-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="manager-wrapper">
+        <!-- Sidebar -->
+        <nav class="manager-sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <a class="sidebar-brand" asp-controller="Manager" asp-action="Index">
+                    <i class="fas fa-chess-king"></i>
+                    <span>GM CONSOLE</span>
+                </a>
+            </div>
+
+            <ul class="sidebar-menu">
+                <li class="menu-item">
+                    <a class="menu-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Manager" && ViewContext.RouteData.Values["Action"]?.ToString() == "Index" ? "active" : "")" asp-controller="Manager" asp-action="Index">
+                        <span class="menu-icon"><i class="fas fa-chart-line"></i></span>
+                        Executive Dashboard
+                    </a>
+                </li>
+
+                <li class="menu-header">Human Resources</li>
+                <li class="menu-item">
+                    <a class="menu-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "HR" && ViewContext.RouteData.Values["Action"]?.ToString() == "Index" ? "active" : "")" asp-controller="HR" asp-action="Index">
+                        <span class="menu-icon"><i class="fas fa-heart-pulse"></i></span>
+                        HR Dashboard
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a class="menu-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "HR" && ViewContext.RouteData.Values["Action"]?.ToString() == "Employees" ? "active" : "")" asp-controller="HR" asp-action="Employees">
+                        <span class="menu-icon"><i class="fas fa-users-gear"></i></span>
+                        Staff Directory
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a class="menu-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "HR" && ViewContext.RouteData.Values["Action"]?.ToString() == "Attendance" ? "active" : "")" asp-controller="HR" asp-action="Attendance">
+                        <span class="menu-icon"><i class="fas fa-clock-rotate-left"></i></span>
+                        Time & Attendance
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a class="menu-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "HR" && ViewContext.RouteData.Values["Action"]?.ToString() == "Payroll" ? "active" : "")" asp-controller="HR" asp-action="Payroll">
+                        <span class="menu-icon"><i class="fas fa-file-invoice-dollar"></i></span>
+                        Payroll Oversight
+                    </a>
+                </li>
+
+                <li class="menu-header">Monitoring (Read-Only)</li>
+                <li class="menu-item">
+                    <a class="menu-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Purchasing" && ViewContext.RouteData.Values["Action"]?.ToString() == "Index" ? "active" : "")" asp-controller="Purchasing" asp-action="Index">
+                        <span class="menu-icon"><i class="fas fa-cart-flatbed"></i></span>
+                        Purchasing Overview
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a class="menu-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Inventory" ? "active" : "")" asp-controller="Inventory" asp-action="Index">
+                        <span class="menu-icon"><i class="fas fa-warehouse"></i></span>
+                        Inventory Status
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a class="menu-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "ProductionOrders" ? "active" : "")" asp-controller="ProductionOrders" asp-action="Index">
+                        <span class="menu-icon"><i class="fas fa-industry"></i></span>
+                        Production Flow
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a class="menu-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "SalesManager" && ViewContext.RouteData.Values["Action"]?.ToString() == "SalesReports" ? "active" : "")" asp-controller="SalesManager" asp-action="SalesReports">
+                        <span class="menu-icon"><i class="fas fa-cash-register"></i></span>
+                        Sales Performance
+                    </a>
+                </li>
+
+                <li class="menu-header">Analytics</li>
+                <li class="menu-item">
+                    <a class="menu-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "KPIReport" ? "active" : "")" asp-controller="Manager" asp-action="Reports">
+                        <span class="menu-icon"><i class="fas fa-gauge-high"></i></span>
+                        KPI Dashboard
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a class="menu-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "ProfitLoss" ? "active" : "")" asp-controller="Manager" asp-action="Reports">
+                        <span class="menu-icon"><i class="fas fa-hand-holding-dollar"></i></span>
+                        Profit & Loss
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Content Area -->
+        <div class="manager-content">
+            <header class="content-header">
+                <div class="d-flex align-items-center">
+                    <button class="btn d-lg-none me-3" onclick="document.getElementById('sidebar').classList.toggle('active')">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h5 class="mb-0 fw-bold text-gray-800">Operational Overview</h5>
+                </div>
+                
+                <div class="user-dropdown dropdown">
+                    <a class="d-flex align-items-center text-dark text-decoration-none dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                        <div class="text-end me-3 d-none d-md-block">
+                            <div class="small fw-bold">General Manager</div>
+                            <div class="small text-muted">@Context.Session.GetString("UserEmail")</div>
+                        </div>
+                        <div class="user-avatar shadow-sm">
+                            GM
+                        </div>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-3 p-2">
+                        <li><a class="dropdown-item rounded" href="#"><i class="fas fa-user-circle me-2"></i>Profile</a></li>
+                        <li><a class="dropdown-item rounded" href="#"><i class="fas fa-cog me-2"></i>Settings</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <form asp-controller="Account" asp-action="Logout" method="post">
+                                <button type="submit" class="dropdown-item rounded text-danger"><i class="fas fa-sign-out-alt me-2"></i>Logout</button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            </header>
+
+            <main class="p-4">
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

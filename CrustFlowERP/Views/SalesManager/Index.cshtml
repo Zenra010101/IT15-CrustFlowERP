@@ -1,0 +1,48 @@
+@{
+    ViewData["Title"] = "Sales Manager Dashboard";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="page-title-box">
+                <h3 class="fw-bold text-dark">Sales Management Hub</h3>
+                <p class="text-muted">Analyze sales performance and coordinate with departments.</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white p-4">
+                <div class="card-body text-center">
+                    <div class="mb-3 text-indigo">
+                        <i class="fas fa-file-invoice-dollar fa-3x"></i>
+                    </div>
+                    <h5 class="fw-bold">Sales Performance Reports</h5>
+                    <p class="text-muted small px-3">Access detailed revenue analysis, transaction logs, and performance metrics.</p>
+                    <a asp-action="SalesReports" class="btn btn-indigo btn-sm rounded-pill text-white px-5 py-2">Open Analytics</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white p-4">
+                <div class="card-body text-center">
+                    <div class="mb-3 text-indigo">
+                        <i class="fas fa-comments-dollar fa-3x"></i>
+                    </div>
+                    <h5 class="fw-bold">Production Coordination</h5>
+                    <p class="text-muted small px-3">Communicate urgent stock requirements and coordinate with the production team.</p>
+                    <a asp-action="ProductionCoordination" class="btn btn-indigo btn-sm rounded-pill text-white px-5 py-2">Open Coordinator</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .btn-indigo { background-color: #6610f2; border-color: #6610f2; }
+    .btn-indigo:hover { background-color: #520dc2; border-color: #4b0caf; }
+    .text-indigo { color: #6610f2; }
+</style>

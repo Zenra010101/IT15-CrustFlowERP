@@ -1,0 +1,237 @@
+@model CrustFlowERP.Models.Purchasing.PurchaseOrder
+@using CrustFlowERP.Models.Production
+@using CrustFlowERP.Models.CRM
+
+@{
+    ViewData["Title"] = "Create Purchase Order";
+    var suppliers = (List<Supplier>)ViewBag.Suppliers;
+    var ingredients = (List<Ingredient>)ViewBag.Ingredients;
+}
+
+<div class="container-fluid">
+    <div class="row mb-4 align-items-center">
+        <div class="col">
+            <h2 class="fw-bold mb-0">Create New Purchase Order</h2>
+            <p class="text-muted">Issue a formal request for ingredients from a supplier.</p>
+        </div>
+        <div class="col-auto">
+            <a asp-action="PurchaseOrders" class="btn btn-outline-secondary px-4 me-2">Cancel</a>
+            <button type="submit" form="poForm" class="btn btn-primary px-4 shadow-sm fw-bold">
+                <i class="fas fa-save me-2"></i> Save Purchase Order
+            </button>
+        </div>
+    </div>
+
+    <form id="poForm" asp-action="CreatePurchaseOrder" method="post">
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="All" class="alert alert-danger rounded-4 border-0 mb-4 small"></div>
+        <div class="row g-4">
+            <!-- Order Details (Top Section) -->
+            <div class="col-12">
+                <div class="card border-0 shadow-sm rounded-4 bg-white">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold text-dark mb-4"><i class="fas fa-info-circle text-primary me-2"></i> Supplier & Order Info</h5>
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label asp-for="SupplierId" class="form-label fw-bold small text-muted text-uppercase">Supplier Name</label>
+                                <select asp-for="SupplierId" class="form-select border-1 bg-white p-3 rounded-3 fw-bold shadow-sm" required>
+                                    <option value="" disabled selected>-- Select Supplier --</option>
+                                    @foreach (var supplier in suppliers)
+                                    {
+                                        <option value="@supplier.Id">@supplier.Name</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="SupplierId" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-2">
+                                <label asp-for="OrderDate" class="form-label fw-bold small text-muted text-uppercase">Issue Date</label>
+                                <input asp-for="OrderDate" type="date" class="form-control border-1 bg-white p-3 rounded-3 shadow-sm" value="@DateTime.Now.ToString("yyyy-MM-dd")" required />
+                                <span asp-validation-for="OrderDate" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-2">
+                                <label asp-for="ExpectedDeliveryDate" class="form-label fw-bold small text-muted text-uppercase">Expected Delivery</label>
+                                <input asp-for="ExpectedDeliveryDate" type="date" class="form-control border-1 bg-white p-3 rounded-3 shadow-sm" />
+                            </div>
+
+                            <div class="col-md-5">
+                                <label asp-for="Notes" class="form-label fw-bold small text-muted text-uppercase">PO Notes</label>
+                                <textarea asp-for="Notes" class="form-control border-1 bg-white p-3 rounded-3 shadow-sm" rows="1" placeholder="Instructions..." style="height: 58px; resize: none;"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Items Section (Bottom Section) -->
+            <div class="col-12">
+                <div class="card border-0 shadow-sm rounded-4 bg-white overflow-hidden">
+                    <div class="card-header bg-transparent py-3 border-0">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="fw-bold text-dark mb-0"><i class="fas fa-list text-primary me-2"></i> Order Line Items / Ingredients</h5>
+                            <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="addItemRow()">
+                                <i class="fas fa-plus me-1"></i> Add Ingredient
+                            </button>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table align-middle mb-0" id="itemsTable" style="table-layout: fixed;">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="ps-4" style="width: 25%;">Ingredient Name</th>
+                                    <th style="width: 20%;">Quantity</th>
+                                    <th style="width: 20%;">Unit Price (₱)</th>
+                                    <th style="width: 25%;" class="text-end">Total Price (₱)</th>
+                                    <th style="width: 10%;" class="text-center pe-4">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="itemsList">
+                                <!-- Dynamic rows go here -->
+                            </tbody>
+                            <tfoot class="bg-light bg-opacity-50">
+                                <tr>
+                                    <td colspan="3" class="text-end fw-bold py-4">GRAND TOTAL (₱)</td>
+                                    <td class="text-end pe-4 py-4" style="overflow: hidden;">
+                                        <h3 class="fw-bold text-primary mb-0" id="grandTotal" style="white-space: nowrap; text-overflow: ellipsis; overflow: hidden;" title="0.00">0.00</h3>
+                                        <input type="hidden" name="TotalAmount" id="hiddenTotal" value="0" />
+                                    </td>
+                                    <td></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Template Row Script -->
+<script>
+    let itemIndex = 0;
+    const ingredients = @Html.Raw(Json.Serialize(ingredients));
+    const suppliers = @Html.Raw(Json.Serialize(suppliers));
+    let selectedSupplierCategory = null;
+
+    function onSupplierChange() {
+        const supplierId = document.getElementById("SupplierId").value;
+        const supplier = suppliers.find(s => s.id == supplierId);
+        
+        if (supplier) {
+            selectedSupplierCategory = supplier.mainProductType;
+            // Clear items list if supplier changes to ensure data integrity
+            document.getElementById('itemsList').innerHTML = "";
+            itemIndex = 0;
+            addItemRow();
+        }
+        updateGrandTotal();
+    }
+
+    function addItemRow() {
+        const supplierId = document.getElementById("SupplierId").value;
+        if (!supplierId) {
+            alert("Please select a supplier first.");
+            return;
+        }
+
+        const tbody = document.getElementById('itemsList');
+        const tr = document.createElement('tr');
+        tr.className = "po-item-row";
+        tr.id = `row_${itemIndex}`;
+
+        let filteredIngredients = ingredients;
+        if (selectedSupplierCategory !== null) {
+            filteredIngredients = ingredients.filter(i => i.category == selectedSupplierCategory);
+        }
+
+        if (filteredIngredients.length === 0) {
+            alert("No ingredients found for this supplier's category.");
+            return;
+        }
+
+        let options = '<option value="" disabled selected>-- Select Ingredient --</option>';
+        filteredIngredients.forEach(i => {
+            options += `<option value="${i.id}" data-unit="${i.unit}"> ${i.name} </option>`;
+        });
+
+        tr.innerHTML = `
+            <td class="ps-4">
+                <select name="details[${itemIndex}].IngredientId" class="form-select border-1 bg-white p-3 rounded-3 ing-select fw-bold" required onchange="updateRowUnit(${itemIndex})">
+                    ${options}
+                </select>
+            </td>
+            <td>
+                <div class="input-group shadow-sm">
+                    <input type="number" name="details[${itemIndex}].Quantity" class="form-control border-1 bg-white p-3 qty-input fw-bold text-dark fs-5" min="0" step="0.01" placeholder="0.00" required oninput="calculateRow(${itemIndex})" style="height: 60px;" />
+                    <span class="input-group-text border-1 bg-light small rounded-end-3 row-unit fw-bold text-muted" style="min-width: 60px; justify-content: center;">Unit</span>
+                </div>
+            </td>
+            <td>
+                <input type="number" name="details[${itemIndex}].UnitPrice" class="form-control border-1 bg-white p-3 price-input fw-bold" min="0" step="0.01" required oninput="calculateRow(${itemIndex})" style="height: 60px;" />
+            </td>
+            <td class="text-end" style="overflow: hidden;">
+                <input type="text" class="form-control border-1 bg-light fw-bold text-dark text-end row-total-display" value="0.00" readonly style="height: 60px; box-shadow: none; white-space: nowrap; text-overflow: ellipsis;" />
+                <input type="hidden" name="details[${itemIndex}].TotalPrice" class="row-total-val" value="0" />
+            </td>
+            <td class="text-center pe-4">
+                <button type="button" class="btn btn-sm btn-outline-danger border-0 rounded-circle" onclick="removeRow(${itemIndex})">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        `;
+
+        tbody.appendChild(tr);
+        itemIndex++;
+    }
+
+    function removeRow(index) {
+        document.getElementById(`row_${index}`).remove();
+        updateGrandTotal();
+    }
+
+    function updateRowUnit(index) {
+        const select = document.querySelector(`#row_${index} .ing-select`);
+        const unit = select.options[select.selectedIndex].getAttribute('data-unit');
+        document.querySelector(`#row_${index} .row-unit`).innerText = unit || "Unit";
+    }
+
+    function calculateRow(index) {
+        const row = document.getElementById(`row_${index}`);
+        const qty = parseFloat(row.querySelector('.qty-input').value) || 0;
+        const price = parseFloat(row.querySelector('.price-input').value) || 0;
+        const total = qty * price;
+
+        row.querySelector('.row-total-display').value = total.toLocaleString('en-US', { minimumFractionDigits: 2 });
+        row.querySelector('.row-total-val').value = total.toFixed(2);
+
+        updateGrandTotal();
+    }
+
+    function updateGrandTotal() {
+        let grandTotal = 0;
+        document.querySelectorAll('.row-total-val').forEach(input => {
+            grandTotal += parseFloat(input.value) || 0;
+        });
+
+        const formatted = grandTotal.toLocaleString('en-US', { minimumFractionDigits: 2 });
+        document.getElementById('grandTotal').innerText = formatted;
+        document.getElementById('grandTotal').title = formatted; // Add tooltip for full value
+        document.getElementById('hiddenTotal').value = grandTotal.toFixed(2);
+    }
+
+    // Bind event
+    document.getElementById("SupplierId").addEventListener("change", onSupplierChange);
+
+    // Initial state
+    window.onload = function() {
+        // No initial rows until supplier is selected
+    };
+</script>
+
+<style>
+    .input-group-text { font-size: 0.75rem; font-weight: 700; color: #6c757d; }
+    .form-select, .form-control { box-shadow: none !important; }
+    .table thead th { font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; padding: 1rem 0.5rem !important; }
+    .card { border-radius: 12px; }
+</style>

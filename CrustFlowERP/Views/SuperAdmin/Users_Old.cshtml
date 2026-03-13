@@ -1,0 +1,216 @@
+@model IEnumerable<CrustFlowERP.Models.UserViewModel>
+@{
+    ViewData["Title"] = "User Management";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="page-title-box d-flex justify-content-between align-items-center">
+                <div>
+                    <h3>User Management</h3>
+                    <p>Manage system users, search, and perform administrative actions.</p>
+                </div>
+                <div>
+                    <button class="btn btn-admin-primary" data-bs-toggle="modal" data-bs-target="#createUserModal">
+                        <i class="fas fa-user-plus me-2"></i> Create New User
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="table-card mb-4">
+                <div class="p-4 border-bottom bg-white">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="fas fa-search text-muted"></i></span>
+                                <input type="text" class="form-control border-start-0 ps-0" placeholder="Search users by name, email..." id="userSearch">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="roleFilter">
+                                <option value="">Filter by Role</option>
+                                <option value="SuperAdmin">Super Admin</option>
+                                <option value="Admin">Admin</option>
+                                <option value="Manager">Manager</option>
+                                <option value="Cashier">Cashier</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="statusFilter">
+                                <option value="">Filter by Status</option>
+                                <option value="active">Active</option>
+                                <option value="locked">Locked</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 40%;">User</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                                <th>Last Login</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var user in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="profile-avatar me-3">@(user.Email![0].ToString().ToUpper())</div>
+                                            <div>
+                                                <h6 class="mb-0 fw-bold">@user.UserName</h6>
+                                                <small class="text-muted">@user.Email</small>
+                                                <div class="mt-1">
+                                                    <span class="badge bg-primary text-white me-1">@user.RoleName</span>
+                                                    <span class="badge bg-secondary text-white">ID: @user.NumericRole</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @foreach (var role in user.Roles)
+                                        {
+                                            var badgeClass = role switch
+                                            {
+                                                "SuperAdmin" => "badge-soft-danger",
+                                                "Admin" => "badge-soft-primary",
+                                                "Manager" => "badge-soft-success",
+                                                "Cashier" => "badge-soft-warning",
+                                                _ => "badge-soft-secondary"
+                                            };
+                                            <span class="badge @badgeClass me-1">@role</span>
+                                        }
+                                        <span class="badge bg-info text-white ms-1">Numeric: @user.NumericRole</span>
+                                    </td>
+                                    <td>
+                                        @if (user.IsLockedOut)
+                                        {
+                                            <span class="badge bg-warning text-dark">Locked</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-success text-white">Active</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="text-muted small">
+                                            @if (user.IsLockedOut && user.LockoutEnd.HasValue)
+                                            {
+                                                <span>Locked until @user.LockoutEnd.Value.ToString("g")</span>
+                                            }
+                                            else
+                                            {
+                                                <span>-</span>
+                                            }
+                                        </div>
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="btn-group" role="group">
+                                            <button class="btn btn-sm btn-outline-primary" onclick="editUser('@user.Id')" title="Edit User">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            @if (user.IsLockedOut)
+                                            {
+                                                <button class="btn btn-sm btn-outline-success" onclick="unlockUser('@user.Id')" title="Unlock Account">
+                                                    <i class="fas fa-unlock"></i>
+                                                </button>
+                                            }
+                                            else
+                                            {
+                                                <button class="btn btn-sm btn-outline-warning" onclick="lockUser('@user.Id')" title="Lock Account">
+                                                    <i class="fas fa-lock"></i>
+                                                </button>
+                                            }
+                                            <button class="btn btn-sm btn-outline-danger" onclick="deleteUser('@user.Id')" title="Delete User">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-info" onclick="resetPassword('@user.Id')" title="Reset Password">
+                                                <i class="fas fa-key"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-secondary" onclick="viewDetails('@user.Id')" title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div class="card-footer bg-white border-top py-3">
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination pagination-sm justify-content-end mb-0">
+                            <li class="page-item disabled"><a class="page-link" href="#" tabindex="-1">Previous</a></li>
+                            <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                            <li class="page-item"><a class="page-link" href="#">2</a></li>
+                            <li class="page-item"><a class="page-link" href="#">3</a></li>
+                            <li class="page-item"><a class="page-link" href="#">Next</a></li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create User Modal -->
+<div class="modal fade" id="createUserModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title fw-bold"><i class="fas fa-user-plus me-2 text-primary"></i> Create New User</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Email Address</label>
+                        <input type="email" class="form-control" placeholder="user@example.com">
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Password</label>
+                            <input type="password" class="form-control" placeholder="Enter password">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Confirm Password</label>
+                            <input type="password" class="form-control" placeholder="Confirm password">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Role</label>
+                        <select class="form-select">
+                            <option value="">Select Role...</option>
+                            <option value="Admin">Admin</option>
+                            <option value="Manager">Manager</option>
+                            <option value="Cashier">Cashier</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-check form-switch mt-3">
+                        <input class="form-check-input" type="checkbox" id="sendEmail" checked>
+                        <label class="form-check-label" for="sendEmail">Send welcome email with login details</label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-admin-primary px-4">Create User</button>
+            </div>
+        </div>
+    </div>
+</div>
+

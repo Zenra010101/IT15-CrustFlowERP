@@ -1,0 +1,291 @@
+@model IEnumerable<CrustFlowERP.Models.Production.Inventory>
+
+@{
+    ViewData["Title"] = "Asset Intelligence - CrustFlowERP";
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
+<style>
+    :root {
+        --asset-glass: rgba(255, 255, 255, 0.75);
+        --asset-border: rgba(255, 255, 255, 0.4);
+    }
+
+    .glass-header {
+        background: var(--asset-glass);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--asset-border);
+        border-radius: 24px;
+        padding: 40px;
+    }
+
+    .asset-card {
+        background: var(--asset-glass);
+        backdrop-filter: blur(15px);
+        border: 1px solid var(--asset-border);
+        border-radius: 28px;
+        padding: 30px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .asset-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+        border-color: #6366f1;
+    }
+
+    .table-luxury {
+        border-collapse: separate;
+        border-spacing: 0 16px;
+    }
+
+    .table-luxury tr {
+        background: white;
+        border-radius: 24px;
+        transition: all 0.2s;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+    }
+
+    .table-luxury tr:hover {
+        transform: scale(1.005);
+        box-shadow: 4px 12px 24px rgba(0,0,0,0.05);
+    }
+
+    .table-luxury td {
+        padding: 24px;
+        border: none;
+        vertical-align: middle;
+    }
+
+    .table-luxury td:first-child { border-radius: 24px 0 0 24px; }
+    .table-luxury td:last-child { border-radius: 0 24px 24px 0; }
+
+    .status-badge {
+        padding: 8px 16px;
+        border-radius: 50px;
+        font-weight: 800;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .badge-optimal { background: #dcfce7; color: #166534; }
+    .badge-critical { background: #fef9c3; color: #854d0e; }
+    .badge-expired { background: #fee2e2; color: #991b1b; }
+
+    .search-orb {
+        background: white;
+        border-radius: 50px;
+        padding: 12px 24px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        display: flex;
+        align-items: center;
+        max-width: 400px;
+    }
+
+    .search-orb input {
+        border: none;
+        outline: none;
+        padding-left: 15px;
+        width: 100%;
+        font-weight: 500;
+    }
+
+    .progress-stepper {
+        height: 6px;
+        background: #f1f5f9;
+        border-radius: 10px;
+        overflow: hidden;
+        margin-top: 8px;
+    }
+
+    .progress-stepper-inner {
+        height: 100%;
+        border-radius: 10px;
+        transition: width 1s ease;
+    }
+
+    @@media (max-width: 992px) {
+        .glass-header { padding: 25px; }
+    }
+</style>
+
+<div class="container-fluid py-4 px-lg-5">
+    <!-- Fluid Header -->
+    <div class="row align-items-center mb-5 animate__animated animate__fadeIn">
+        <div class="col-lg-6">
+            <h1 class="fw-bold text-dark display-5 mb-1" style="letter-spacing: -2px;">Asset Logistics</h1>
+            <p class="text-secondary lead mb-0">Unified Inventory Control & Lifecycle Tracking</p>
+        </div>
+        <div class="col-lg-6 text-lg-end mt-4 mt-lg-0 d-flex flex-column flex-lg-row justify-content-lg-end gap-3 align-items-center">
+            <div class="search-orb w-100">
+                <i class="fas fa-search text-muted"></i>
+                <input type="text" id="assetSearch" placeholder="Filter by batch, item, or status..." onkeyup="filterAssets()">
+            </div>
+            @if (Context.Session.GetInt32("UserRole") != 11)
+            {
+                <a asp-action="Create" class="btn btn-dark rounded-pill px-5 py-3 fw-bold shadow-lg text-nowrap">
+                    <i class="fas fa-plus-circle me-2"></i> Receive Assets
+                </a>
+            }
+        </div>
+    </div>
+
+    <!-- Live Snapshots -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-3 animate__animated animate__fadeInUp" style="animation-delay: 0.1s;">
+            <div class="asset-card">
+                <div class="small text-muted fw-bold text-uppercase mb-2">Total Tracked SKUs</div>
+                <div class="h2 fw-bold text-dark mb-0">@Model.Count()</div>
+                <div class="small text-primary fw-medium mt-2">Active Asset Nodes</div>
+            </div>
+        </div>
+        <div class="col-md-3 animate__animated animate__fadeInUp" style="animation-delay: 0.2s;">
+            <div class="asset-card">
+                <div class="small text-muted fw-bold text-uppercase mb-2">Stock Redlines</div>
+                <div class="h2 fw-bold text-danger mb-0">@Model.Count(i => i.RemainingQuantity < 10)</div>
+                <div class="small text-muted fw-medium mt-2">Immediate Refill Required</div>
+            </div>
+        </div>
+        <div class="col-md-3 animate__animated animate__fadeInUp" style="animation-delay: 0.3s;">
+            <div class="asset-card">
+                <div class="small text-muted fw-bold text-uppercase mb-2">Expiry Exposure</div>
+                <div class="h2 fw-bold text-warning mb-0">@Model.Count(i => (i.ExpirationDate - DateTime.Now).TotalDays < 7 && (i.ExpirationDate - DateTime.Now).TotalDays >= 0)</div>
+                <div class="small text-muted fw-medium mt-2">Critical 7D Window</div>
+            </div>
+        </div>
+        <div class="col-md-3 animate__animated animate__fadeInUp" style="animation-delay: 0.4s;">
+            <div class="asset-card bg-dark">
+                <div class="small text-white text-opacity-50 fw-bold text-uppercase mb-2">Inventory Valuation</div>
+                <div class="h2 fw-bold text-white mb-0">₱@Model.Sum(i => i.RemainingQuantity * 55).ToString("N0")</div>
+                <span class="badge bg-success bg-opacity-25 text-success rounded-pill mt-2">ESTIMATED</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Master Asset Table -->
+    <div class="table-responsive">
+        <table class="table-luxury w-100" id="assetTable">
+            <thead>
+                <tr class="text-secondary fw-bold small text-uppercase" style="letter-spacing: 1px;">
+                    <th class="ps-4">Resource Identification</th>
+                    <th>Logistics Detail</th>
+                    <th>Utilization Capacity</th>
+                    <th>Lifecycle Status</th>
+                    <th class="text-center">Integrity</th>
+                    <th class="text-end pe-4">Command</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model) {
+                    double daysUntilExpiry = (item.ExpirationDate.Date - DateTime.Now.Date).TotalDays;
+                    double stockPercentage = (double)item.RemainingQuantity > 100 ? 100 : (double)(item.RemainingQuantity / 100m) * 100;
+                    
+                    <tr class="animate__animated animate__fadeIn">
+                        <td class="ps-4">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-primary bg-opacity-10 p-3 rounded-4 text-primary me-3">
+                                    <i class="fas fa-box-open fa-lg"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-bold text-dark h6 mb-1">@item.Ingredient?.Name</div>
+                                    <span class="badge bg-light text-secondary rounded-pill fw-bold border" style="font-size: 0.6rem;">@item.Category</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="fw-bold text-dark mb-1">Batch #@item.BatchNumber</div>
+                            <div class="small text-muted">@item.Supplier</div>
+                        </td>
+                        <td style="width: 200px;">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="fw-bold text-dark small">@item.RemainingQuantity @item.Ingredient?.Unit</span>
+                                <span class="fw-bold text-muted small">@Math.Round(stockPercentage, 0)%</span>
+                            </div>
+                            <div class="progress-stepper">
+                                <div class="progress-stepper-inner @(item.RemainingQuantity < 10 ? "bg-danger" : "bg-primary")" 
+                                     style="width: @stockPercentage%"></div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="fw-bold @(daysUntilExpiry < 7 ? "text-danger" : "text-dark") small">
+                                @item.ExpirationDate.ToString("MMM dd, yyyy")
+                            </div>
+                            <div class="smaller text-muted mt-1">
+                                @(daysUntilExpiry < 0 ? "Expired" : $"{daysUntilExpiry} Days Remaining")
+                            </div>
+                        </td>
+                        <td class="text-center">
+                            @if (daysUntilExpiry < 0) {
+                                <span class="status-badge badge-expired">Expired</span>
+                            } else if (daysUntilExpiry < 7 || item.RemainingQuantity < 10) {
+                                <span class="status-badge badge-critical">Critical</span>
+                            } else {
+                                <span class="status-badge badge-optimal">Optimal</span>
+                            }
+                        </td>
+                        <td class="text-end pe-4">
+                            <div class="dropdown">
+                                <button class="btn btn-light rounded-circle shadow-sm" type="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-ellipsis-h"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg p-2 rounded-4">
+                                    <li><a class="dropdown-item rounded-3 py-2" href="#" onclick="openInventoryModal(@item.Id)"><i class="fas fa-search-dollar me-2 text-primary"></i>Inspect Details</a></li>
+                                    @if (Context.Session.GetInt32("UserRole") != 11) {
+                                        <li><a class="dropdown-item rounded-3 py-2" href="#" onclick="openEditModal(@item.Id)"><i class="fas fa-sliders me-2 text-dark"></i>Re-calibrate Stock</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item rounded-3 py-2 text-danger" href="#" onclick="archiveItem(@item.Id, '@item.Ingredient?.Name')"><i class="fas fa-archive me-2"></i>Archive Asset</a></li>
+                                    }
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function filterAssets() {
+            let input = document.getElementById('assetSearch');
+            let filter = input.value.toUpperCase();
+            let table = document.getElementById('assetTable');
+            let tr = table.getElementsByTagName('tr');
+
+            for (let i = 1; i < tr.length; i++) {
+                let text = tr[i].textContent || tr[i].innerText;
+                if (text.toUpperCase().indexOf(filter) > -1) {
+                    tr[i].style.display = "";
+                } else {
+                    tr[i].style.display = "none";
+                }
+            }
+        }
+
+        // Keep existing utility functions for modals
+        function openInventoryModal(id) {
+            const modal = new bootstrap.Modal(document.getElementById('inventoryModal'));
+            const content = document.getElementById('modalContent');
+            content.innerHTML = `<div class="modal-body text-center py-5"><div class="spinner-border text-primary" role="status"></div></div>`;
+            modal.show();
+            fetch(`/Inventory/GetInventoryDetailsContent/${id}`)
+                .then(response => response.text())
+                .then(html => content.innerHTML = html);
+        }
+
+        function openEditModal(id) {
+            const modal = new bootstrap.Modal(document.getElementById('editModal'));
+            const content = document.getElementById('editModalContent');
+            content.innerHTML = `<div class="modal-body text-center py-5"><div class="spinner-border text-primary" role="status"></div></div>`;
+            modal.show();
+            fetch(`/Inventory/GetEditContent/${id}`)
+                .then(response => response.text())
+                .then(html => content.innerHTML = html);
+        }
+    </script>
+}
+

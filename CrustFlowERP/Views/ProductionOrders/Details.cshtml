@@ -1,0 +1,551 @@
+@model CrustFlowERP.Models.Production.ProductionOrder
+@using CrustFlowERP.Models.Production
+
+@{
+    ViewData["Title"] = $"Order #PROD-{Model.Id:D4} Details";
+}
+
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4 align-items-center">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-2">
+                    <li class="breadcrumb-item"><a asp-action="Index">Production Schedule</a></li>
+                    <li class="breadcrumb-item active">Order Details</li>
+                </ol>
+            </nav>
+            <h2 class="fw-bold mb-0">Production Tracking: #PROD-@Model.Id.ToString("D4")</h2>
+            <p class="text-muted">Detailed logs and material requirements for this batch.</p>
+        </div>
+        <div class="col-auto">
+            <div class="d-flex gap-2">
+                <a asp-action="Index" class="btn btn-outline-secondary border border-secondary border-1 px-4 shadow-sm">
+                    <i class="fas fa-arrow-left me-2"></i> Back to Schedule
+                </a>
+                <a asp-action="DownloadBatchSheet" asp-route-id="@Model.Id" class="btn btn-primary border border-primary border-1 px-4 shadow-sm fw-bold">
+                    <i class="fas fa-file-pdf me-2"></i> Download Production Sheet
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Summary Cards -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm mb-4 overflow-hidden">
+                <div class="card-header bg-white py-3 border-0">
+                    <h5 class="fw-bold mb-0 text-primary"><i class="fas fa-info-circle me-2"></i> Order Overview</h5>
+                </div>
+                <div class="card-body p-4 bg-light bg-opacity-50">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <small class="text-muted text-uppercase fw-bold d-block mb-1">Product Being Produced</small>
+                            <h4 class="fw-bold mb-1">@Model.Product?.Name</h4>
+                            <span class="badge bg-primary px-3 py-1 rounded-pill">@Model.Product?.Category</span>
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <small class="text-muted text-uppercase fw-bold d-block mb-1">Current Production Status</small>
+                            @{
+                                string badgeClass = Model.Status switch {
+                                    ProductionStatus.Planned => "bg-info",
+                                    ProductionStatus.InProgress => "bg-primary",
+                                    ProductionStatus.Completed => "bg-success",
+                                    ProductionStatus.QualityChecked => "bg-dark",
+                                    _ => "bg-secondary"
+                                };
+                            }
+                            <h3 class="fw-bold mb-0">
+                                <span class="badge @badgeClass shadow-sm px-4">@Model.Status</span>
+                            </h3>
+                        </div>
+                        <div class="col-12 mt-4">
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <div class="p-3 bg-white rounded-3 border text-center shadow-sm h-100">
+                                        <small class="d-block text-muted mb-1">Planned Qty</small>
+                                        <h4 class="fw-bold mb-0">@Model.QuantityPlanned.ToString("N2")</h4>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="p-3 bg-white rounded-3 border text-center shadow-sm h-100">
+                                        <small class="d-block text-muted mb-1">Produced Qty</small>
+                                        <h4 class="fw-bold mb-0 text-success">@Model.QuantityActual.ToString("N2")</h4>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="p-3 bg-white rounded-3 border text-center shadow-sm h-100">
+                                        <small class="d-block text-muted mb-1">Success Rate</small>
+                                        @{
+                                            var rate = Model.QuantityPlanned > 0 ? (Model.QuantityActual / Model.QuantityPlanned) * 100 : 0;
+                                        }
+                                        <h4 class="fw-bold mb-0">@rate.ToString("N1")%</h4>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="p-3 bg-white rounded-3 border text-center shadow-sm h-100">
+                                        <small class="d-block text-muted mb-1">Scheduled Date</small>
+                                        <h5 class="fw-bold mb-0">@Model.ScheduledStart.ToString("MMM dd")</h5>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Material Requirements -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="fw-bold mb-0"><i class="fas fa-layer-group text-warning me-2"></i> Material Requirements / Bill of Materials</h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="ps-4">Ingredient</th>
+                                <th class="text-center">Req per Unit</th>
+                                <th class="text-end pe-4">Total Amount Needed</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.Product?.Recipes != null && Model.Product.Recipes.Any())
+                            {
+                                foreach (var recipe in Model.Product.Recipes)
+                                {
+                                    var totalNeeded = recipe.QuantityRequired * Model.QuantityPlanned;
+                                    <tr>
+                                        <td class="ps-4">
+                                            <div class="fw-bold">@recipe.Ingredient?.Name</div>
+                                        </td>
+                                        <td class="text-center">@recipe.QuantityRequired.ToString("G29") @recipe.Ingredient?.Unit</td>
+                                        <td class="text-end pe-4 fw-bold text-primary">
+                                            @totalNeeded.ToString("N2") @recipe.Ingredient?.Unit
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="3" class="p-4 text-center text-muted">
+                                        <i class="fas fa-exclamation-circle me-2"></i> No recipe defined for this product.
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Detailed Logs -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="fw-bold mb-0"><i class="fas fa-list-check text-info me-2"></i> Production Logs & Activity</h5>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush timeline-list">
+                        @if (Model.ProductionLogs != null && Model.ProductionLogs.Any())
+                        {
+                            foreach (var log in Model.ProductionLogs.OrderByDescending(l => l.Timestamp))
+                            {
+                                <li class="list-group-item p-4 border-0 border-bottom">
+                                    <div class="d-flex w-100 justify-content-between mb-1">
+                                        <h6 class="fw-bold mb-0">@log.ActivityDescription</h6>
+                                        <small class="text-muted">@log.Timestamp.ToString("MMM dd, hh:mm tt")</small>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-info-subtle text-info p-1 px-2 rounded-pill small fw-bold me-2">
+                                            <i class="fas fa-user-circle me-1"></i> @(log.Staff?.Email ?? "Operator")
+                                        </div>
+                                    </div>
+                                </li>
+                            }
+                        }
+                        else
+                        {
+                            <li class="p-5 text-center text-muted border-0">
+                                No activity logged yet for this order.
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+
+            <div class="row g-4 mb-4">
+                <!-- QA Results -->
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-white py-3 border-0">
+                            <h6 class="fw-bold mb-0 text-success"><i class="fas fa-clipboard-check me-2"></i> Quality Assurance Stats</h6>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0 small">
+                                    <thead class="bg-light">
+                                        <tr>
+                                            <th class="ps-3">Status</th>
+                                            <th>Comments</th>
+                                            <th class="pe-3">Time</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if (Model.QualityChecks != null && Model.QualityChecks.Any())
+                                        {
+                                            foreach (var check in Model.QualityChecks.OrderByDescending(c => c.CheckedAt))
+                                            {
+                                                <tr>
+                                                    <td class="ps-3">
+                                                        @if (check.IsPassed) { <span class="badge bg-success-subtle text-success">PASSED</span> } 
+                                                        else { <span class="badge bg-danger-subtle text-danger">FAILED</span> }
+                                                    </td>
+                                                    <td>@check.Remarks</td>
+                                                    <td class="pe-3 text-muted">@check.CheckedAt.ToString("MM/dd HH:mm")</td>
+                                                </tr>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <tr><td colspan="3" class="text-center p-3 text-muted">No QC records.</td></tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Wastage Report -->
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-white py-3 border-0">
+                            <h6 class="fw-bold mb-0 text-danger"><i class="fas fa-trash-can me-2"></i> Wastage Tracking Log</h6>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0 small">
+                                    <thead class="bg-light">
+                                        <tr>
+                                            <th class="ps-3">Amount</th>
+                                            <th>Reason</th>
+                                            <th class="pe-3">Timestamp</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if (Model.Wastages != null && Model.Wastages.Any())
+                                        {
+                                            foreach (var waste in Model.Wastages.OrderByDescending(w => w.ReportedAt))
+                                            {
+                                                <tr>
+                                                    <td class="ps-3 fw-bold text-danger">-@waste.QuantityLost.ToString("N0")</td>
+                                                    <td>@waste.Reason</td>
+                                                    <td class="pe-3 text-muted">@waste.ReportedAt.ToString("MM/dd HH:mm")</td>
+                                                </tr>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <tr><td colspan="3" class="text-center p-3 text-muted">Zero reported wastage.</td></tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar Details -->
+        <div class="col-lg-4">
+            <!-- Timeline/Dates -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <h6 class="fw-bold text-muted text-uppercase small mb-4">Time Tracking</h6>
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="bg-light p-3 rounded-circle me-3">
+                            <i class="fas fa-calendar text-primary"></i>
+                        </div>
+                        <div>
+                            <small class="text-muted d-block">Scheduled Start</small>
+                            <span class="fw-bold">@Model.ScheduledStart.ToString("MMM dd, yyyy - hh:mm tt")</span>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="bg-light p-3 rounded-circle me-3">
+                            <i class="fas fa-play text-info"></i>
+                        </div>
+                        <div>
+                            <small class="text-muted d-block">Actual Start</small>
+                            <span class="fw-bold text-info">@(Model.ActualStart?.ToString("MMM dd, yyyy - hh:mm tt") ?? "Pending")</span>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center mb-0">
+                        <div class="bg-light p-3 rounded-circle me-3">
+                            <i class="fas fa-flag-checkered text-success"></i>
+                        </div>
+                        <div>
+                            <small class="text-muted d-block">Actual End</small>
+                            <span class="fw-bold text-success">@(Model.ActualEnd?.ToString("MMM dd, yyyy - hh:mm tt") ?? "Processing...")</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Production Controls -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-dark text-white py-3">
+                    <h6 class="fw-bold mb-0"><i class="fas fa-cogs me-2"></i> Production Controls</h6>
+                </div>
+                <div class="card-body">
+                    @{
+                        var currentRole = Context.Session.GetInt32("UserRole") ?? 0;
+                        if (currentRole == 0 && User.Identity?.IsAuthenticated == true)
+                        {
+                            if (User.IsInRole("SuperAdmin")) currentRole = 1;
+                            else if (User.IsInRole("Admin")) currentRole = 2;
+                            else if (User.IsInRole("Production Manager")) currentRole = 3;
+                            else if (User.IsInRole("Production Staff")) currentRole = 4;
+                            else if (User.IsInRole("Quality Control Staff")) currentRole = 5;
+                            else if (User.IsInRole("Manager")) currentRole = 11;
+                        }
+                    }
+
+                    <div class="d-grid gap-2">
+                        @if (currentRole <= 4 || currentRole == 11) // Manager, Prod Manager, Baker
+                        {
+                            if (Model.Status == ProductionStatus.Planned)
+                            {
+                                <button type="button" class="btn btn-primary" onclick="updateOrderStatus(@Model.Id, 'InProgress')">
+                                    <i class="fas fa-play me-2"></i> Start Production
+                                </button>
+                            }
+                            else if (Model.Status == ProductionStatus.InProgress)
+                            {
+                                <button type="button" class="btn btn-warning" onclick="showActivityModal(@Model.Id)">
+                                    <i class="fas fa-comment-dots me-2"></i> Log Activity
+                                </button>
+                                <button type="button" class="btn btn-danger" onclick="showWastageModal(@Model.Id)">
+                                    <i class="fas fa-trash-alt me-2"></i> Report Issue/Wastage
+                                </button>
+                                <button type="button" class="btn btn-success" onclick="showFinishModal(@Model.Id)">
+                                    <i class="fas fa-check-double me-2"></i> Mark as Finished
+                                </button>
+                            }
+                        }
+
+                        @if (currentRole == 5) // QC Staff ONLY
+                        {
+                            if (Model.Status == ProductionStatus.Completed)
+                            {
+                                <button type="button" class="btn btn-info text-white" onclick="showQCModal(@Model.Id)">
+                                    <i class="fas fa-microscope me-2"></i> Perform Quality Check
+                                </button>
+                            }
+                        }
+
+                        @if (currentRole <= 3 || currentRole == 11) // Manager, Prod Manager
+                        {
+                            if (Model.Status == ProductionStatus.QualityChecked)
+                            {
+                                <button type="button" class="btn btn-dark" onclick="approveOrder(@Model.Id)">
+                                    <i class="fas fa-stamp me-2"></i> Final Approval
+                                </button>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quality & Wastage -->
+            <div class="card border-0 shadow-sm mb-4 bg-primary bg-opacity-10">
+                <div class="card-body">
+                    <h6 class="fw-bold text-primary text-uppercase small mb-3">Quality Assurance Tracking</h6>
+                    <div class="row text-center g-0 border rounded overflow-hidden bg-white shadow-sm">
+                        <div class="col-6 border-end p-3">
+                            <small class="text-muted d-block mb-1">QC Passed</small>
+                            <h3 class="fw-bold text-success mb-0">@(Model.QualityChecks?.Count(c => c.IsPassed) ?? 0)</h3>
+                        </div>
+                        <div class="col-6 p-3">
+                            <small class="text-muted d-block mb-1">Total Waste</small>
+                            <h3 class="fw-bold text-danger mb-0">@((Model.Wastages?.Sum(w => w.QuantityLost) ?? 0).ToString("N0"))</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @if (!string.IsNullOrEmpty(Model.Notes))
+            {
+                <div class="card border-0 shadow-sm bg-warning bg-opacity-10 border border-warning border-opacity-25">
+                    <div class="card-body">
+                        <h6 class="fw-bold text-warning-emphasis text-uppercase small mb-2"><i class="fas fa-sticky-note me-2"></i> Production Notes</h6>
+                        <p class="mb-0 small text-dark opacity-100">@Model.Notes</p>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Modals -->
+<div class="modal fade" id="productionModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-0 bg-light">
+                <h5 class="modal-title fw-bold" id="modalTitle">Action</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4" id="modalBody">
+                <!-- Content injected via JS -->
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary rounded-pill px-4" id="modalSubmit">Submit</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const prodModal = new bootstrap.Modal(document.getElementById('productionModal'));
+        const modalBody = document.getElementById('modalBody');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalSubmit = document.getElementById('modalSubmit');
+
+        function updateOrderStatus(id, status, actualQty = null) {
+            if (confirm(`Are you sure you want to update status to ${status}?`)) {
+                fetch('/ProductionOrders/UpdateStatus', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `id=${id}&status=${status}${actualQty ? `&actualQty=${actualQty}` : ''}`
+                }).then(async res => {
+                    const data = await res.json();
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Error: ' + (data.message || 'Operation failed. Check server logs.'));
+                    }
+                }).catch(err => {
+                    console.error(err);
+                    alert('Server error: Could not complete request.');
+                });
+            }
+        }
+
+        function showActivityModal(id) {
+            modalTitle.innerText = "Log Activity";
+            modalBody.innerHTML = `
+                <div class="mb-3">
+                    <label class="form-label">Description</label>
+                    <textarea id="logDesc" class="form-control" rows="3" placeholder="Describe the current activity..."></textarea>
+                </div>
+            `;
+            modalSubmit.onclick = () => {
+                const desc = document.getElementById('logDesc').value;
+                fetch('/ProductionOrders/LogActivity', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `id=${id}&description=${encodeURIComponent(desc)}`
+                }).then(res => res.json()).then(data => {
+                    if (data.success) location.reload();
+                });
+            };
+            prodModal.show();
+        }
+
+        function showWastageModal(id) {
+            modalTitle.innerText = "Report Wastage / Issue";
+            modalBody.innerHTML = `
+                <div class="mb-3">
+                    <label class="form-label">Quantity Lost</label>
+                    <input type="number" id="wasteQty" class="form-control" step="0.01">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Reason</label>
+                    <select id="wasteReason" class="form-select">
+                        <option>Burnt</option>
+                        <option>Spoiled</option>
+                        <option>Machine Failure</option>
+                        <option>Dough Quality</option>
+                        <option>Other</option>
+                    </select>
+                </div>
+            `;
+            modalSubmit.onclick = () => {
+                const qty = document.getElementById('wasteQty').value;
+                const reason = document.getElementById('wasteReason').value;
+                fetch('/ProductionOrders/ReportWastage', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `id=${id}&quantity=${qty}&reason=${encodeURIComponent(reason)}`
+                }).then(res => res.json()).then(data => {
+                    if (data.success) location.reload();
+                });
+            };
+            prodModal.show();
+        }
+
+        function showFinishModal(id) {
+            modalTitle.innerText = "Mark as Finished";
+            const currentWastage = @(Model.Wastages?.Sum(w => w.QuantityLost) ?? 0);
+            const suggestedQty = @(Model.QuantityActual > 0 ? Model.QuantityActual : (Model.QuantityPlanned - (Model.Wastages?.Sum(w => w.QuantityLost) ?? 0)));
+            modalBody.innerHTML = `
+                <div class="mb-3">
+                    <label class="form-label text-primary fw-bold">Actual Quantity Processed</label>
+                    <input type="number" id="actualQtyInput" class="form-control bg-light border-primary border-2 shadow-sm fw-bold" value="${suggestedQty}" readonly>
+                    <div class="form-text mt-2 text-dark">This is the final <strong>usable</strong> quantity calculated by the system (Planned - Wastage).</div>
+                    ${currentWastage > 0 ? `<div class="mt-2 text-danger small p-2 bg-danger-subtle rounded border border-danger-subtle"><i class="fas fa-exclamation-triangle me-1"></i> <strong>Note:</strong> ${currentWastage} units were already subtracted as wastage.</div>` : ''}
+                </div>
+            `;
+            modalSubmit.onclick = () => {
+                const qty = document.getElementById('actualQtyInput').value;
+                updateOrderStatus(id, 'Completed', qty);
+            };
+            prodModal.show();
+        }
+
+        function showQCModal(id) {
+            modalTitle.innerText = "Quality Control Inspection";
+            modalBody.innerHTML = `
+                <div class="mb-3">
+                    <label class="form-label d-block">Result</label>
+                    <div class="btn-group w-100" role="group">
+                        <input type="radio" class="btn-check" name="qcResult" id="qcPass" value="true" checked>
+                        <label class="btn btn-outline-success" for="qcPass">Pass</label>
+                        <input type="radio" class="btn-check" name="qcResult" id="qcFail" value="false">
+                        <label class="btn btn-outline-danger" for="qcFail">Fail</label>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Remarks / Defects</label>
+                    <textarea id="qcRemarks" class="form-control" rows="3" placeholder="Notes on texture, taste, appearance..."></textarea>
+                </div>
+            `;
+            modalSubmit.onclick = () => {
+                const isPassed = document.querySelector('input[name="qcResult"]:checked').value;
+                const remarks = document.getElementById('qcRemarks').value;
+                fetch('/ProductionOrders/LogQualityCheck', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `id=${id}&isPassed=${isPassed}&remarks=${encodeURIComponent(remarks)}`
+                }).then(res => res.json()).then(data => {
+                    if (data.success) location.reload();
+                });
+            };
+            prodModal.show();
+        }
+
+        function approveOrder(id) {
+            if (confirm("Finalize and approve this production batch? This will move it to ready stock.")) {
+                updateOrderStatus(id, 'Approved');
+            }
+        }
+    </script>
+}
+
+<style>
+    .bg-info-subtle { background-color: rgba(13, 202, 240, 0.15); }
+    .card { border-radius: 12px; }
+    .timeline-list .list-group-item:last-child { border-bottom: none !important; }
+</style>

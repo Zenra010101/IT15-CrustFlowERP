@@ -1,0 +1,75 @@
+@{
+    ViewData["Title"] = "Financial Reports";
+    Layout = "~/Views/Shared/_AdminSidebarLayout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row mb-5">
+        <div class="col-12 text-center text-md-start">
+            <h2 class="display-6 fw-bold text-dark"><i class="fas fa-file-invoice-dollar me-2 text-primary"></i>Financial Statements & Reports</h2>
+            <p class="text-muted">Generate balance sheets, profit and loss statements, and annual reports here.</p>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white hover-shadow-lg transition-all p-4 text-center">
+                <div class="mb-3 text-primary h1"><i class="fas fa-file-contract"></i></div>
+                <h5 class="fw-bold">Balance Sheet</h5>
+                <p class="text-muted small">Overview of company's assets, liabilities, and stockholders' equity.</p>
+                <div class="mt-auto pt-3">
+                    <button class="btn btn-outline-primary rounded-pill btn-sm px-4">Generate Statement</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white hover-shadow-lg transition-all p-4 text-center">
+                <div class="mb-3 text-success h1"><i class="fas fa-chart-line"></i></div>
+                <h5 class="fw-bold">Profit & Loss</h5>
+                <p class="text-muted small">Summary of revenue, costs, and expenses incurred during a specific period.</p>
+                <div class="mt-auto pt-3">
+                    <button class="btn btn-outline-success rounded-pill btn-sm px-4">Generate Report</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white hover-shadow-lg transition-all p-4 text-center">
+                <div class="mb-3 text-warning h1"><i class="fas fa-university"></i></div>
+                <h5 class="fw-bold">General Ledger</h5>
+                <p class="text-muted small">Detailed record of every single financial transaction by account type.</p>
+                <div class="mt-auto pt-3">
+                    <button class="btn btn-outline-warning rounded-pill btn-sm px-4">Review Ledger</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white hover-shadow-lg transition-all p-4 text-center">
+                <div class="mb-3 text-danger h1"><i class="fas fa-hand-holding-usd"></i></div>
+                <h5 class="fw-bold">Cash Flow</h5>
+                <p class="text-muted small">Analysis of how much money is coming in and going out of the business.</p>
+                <div class="mt-auto pt-3">
+                    <button class="btn btn-outline-danger rounded-pill btn-sm px-4">Track Flow</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mt-5">
+        <div class="card-header bg-white py-3 border-0">
+            <h5 class="mb-0 fw-bold">Audit History & Logs</h5>
+        </div>
+        <div class="card-body p-4 text-center py-5 text-muted">
+            <i class="fas fa-history fa-3x mb-3 opacity-25"></i>
+            <p>Historical reports and system audit logs will be listed here.</p>
+            <button class="btn btn-link btn-sm text-decoration-none border rounded-pill px-4 mt-2">Refresh Data</button>
+        </div>
+    </div>
+</div>
+
+<style>
+    .transition-all { transition: all 0.3s ease; }
+    .hover-shadow-lg:hover { transform: translateY(-5px); box-shadow: 0 1rem 3rem rgba(0,0,0,0.1) !important; }
+</style>

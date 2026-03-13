@@ -1,0 +1,58 @@
+﻿Using project 'C:\Users\Ahbu Santos\source\repos\CrustFlowERP\CrustFlowERP\CrustFlowERP.csproj'.
+Using startup project 'C:\Users\Ahbu Santos\source\repos\CrustFlowERP\CrustFlowERP\CrustFlowERP.csproj'.
+dotnet msbuild /getProperty:ProjectName /getProperty:AssemblyName /getProperty:DesignAssembly /getProperty:Language /getProperty:OutputPath /getProperty:PlatformTarget /getProperty:ProjectAssetsFile /getProperty:ProjectDir /getProperty:RootNamespace /getProperty:RuntimeFrameworkVersion /getProperty:TargetFileName /getProperty:TargetFrameworkMoniker /getProperty:Nullable /getProperty:TargetFramework /getProperty:TargetPlatformIdentifier /getProperty:Platform /t:ResolvePackageAssets /getItem:RuntimeCopyLocalItems "C:\Users\Ahbu Santos\source\repos\CrustFlowERP\CrustFlowERP\CrustFlowERP.csproj"
+dotnet msbuild /getProperty:ProjectName /getProperty:AssemblyName /getProperty:DesignAssembly /getProperty:Language /getProperty:OutputPath /getProperty:PlatformTarget /getProperty:ProjectAssetsFile /getProperty:ProjectDir /getProperty:RootNamespace /getProperty:RuntimeFrameworkVersion /getProperty:TargetFileName /getProperty:TargetFrameworkMoniker /getProperty:Nullable /getProperty:TargetFramework /getProperty:TargetPlatformIdentifier /getProperty:Platform /t:ResolvePackageAssets /getItem:RuntimeCopyLocalItems "C:\Users\Ahbu Santos\source\repos\CrustFlowERP\CrustFlowERP\CrustFlowERP.csproj"
+Build started...
+dotnet build "C:\Users\Ahbu Santos\source\repos\CrustFlowERP\CrustFlowERP\CrustFlowERP.csproj" /verbosity:quiet /nologo /p:PublishAot=false
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:07.97
+
+Build succeeded.
+dotnet exec --depsfile "C:\Users\Ahbu Santos\source\repos\CrustFlowERP\CrustFlowERP\bin\Debug\net10.0\CrustFlowERP.deps.json" --additionalprobingpath "C:\Users\Ahbu Santos\.nuget\packages" --additionalprobingpath "C:\Program Files (x86)\Microsoft Visual Studio\Shared\NuGetPackages" --runtimeconfig "C:\Users\Ahbu Santos\source\repos\CrustFlowERP\CrustFlowERP\bin\Debug\net10.0\CrustFlowERP.runtimeconfig.json" "C:\Users\Ahbu Santos\.nuget\packages\dotnet-ef\10.0.3\tools\net8.0\any\tools\net8.0\any\ef.dll" database update --assembly "C:\Users\Ahbu Santos\source\repos\CrustFlowERP\CrustFlowERP\bin\Debug\net10.0\CrustFlowERP.dll" --project "C:\Users\Ahbu Santos\source\repos\CrustFlowERP\CrustFlowERP\CrustFlowERP.csproj" --startup-assembly "C:\Users\Ahbu Santos\source\repos\CrustFlowERP\CrustFlowERP\bin\Debug\net10.0\CrustFlowERP.dll" --startup-project "C:\Users\Ahbu Santos\source\repos\CrustFlowERP\CrustFlowERP\CrustFlowERP.csproj" --project-dir "C:\Users\Ahbu Santos\source\repos\CrustFlowERP\CrustFlowERP\\" --root-namespace CrustFlowERP --language C# --framework net10.0 --design-assembly "C:\Users\Ahbu Santos\.nuget\packages\microsoft.entityframeworkcore.design\10.0.2\lib\net10.0\Microsoft.EntityFrameworkCore.Design.dll" --nullable --working-dir "C:\Users\Ahbu Santos\source\repos\CrustFlowERP\CrustFlowERP" --verbose
+Using assembly 'CrustFlowERP'.
+Using startup assembly 'CrustFlowERP'.
+Using application base 'C:\Users\Ahbu Santos\source\repos\CrustFlowERP\CrustFlowERP\bin\Debug\net10.0'.
+Using working directory 'C:\Users\Ahbu Santos\source\repos\CrustFlowERP\CrustFlowERP'.
+Using root namespace 'CrustFlowERP'.
+Using project directory 'C:\Users\Ahbu Santos\source\repos\CrustFlowERP\CrustFlowERP\'.
+Remaining arguments: .
+Finding DbContext classes...
+Using environment 'Development'.
+Finding IDesignTimeDbContextFactory implementations...
+Finding DbContext classes in the project...
+Found DbContext 'ApplicationDbContext'.
+Finding application service provider in assembly 'CrustFlowERP'...
+Finding Microsoft.Extensions.Hosting service provider...
+Using application service provider from Microsoft.Extensions.Hosting.
+Using context 'ApplicationDbContext'.
+warn: Microsoft.EntityFrameworkCore.Model.Validation[30000]
+      No store type was specified for the decimal property 'MinimumStockLevel' on entity type 'Ingredient'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+warn: Microsoft.EntityFrameworkCore.Model.Validation[30000]
+      No store type was specified for the decimal property 'Price' on entity type 'Product'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+Finding design-time services referenced by assembly 'CrustFlowERP'...
+Finding design-time services referenced by assembly 'CrustFlowERP'...
+No referenced design-time services were found.
+Finding design-time services for provider 'Microsoft.EntityFrameworkCore.SqlServer'...
+Using design-time services from provider 'Microsoft.EntityFrameworkCore.SqlServer'.
+Finding IDesignTimeServices implementations in assembly 'CrustFlowERP'...
+No design-time services were found.
+warn: Microsoft.EntityFrameworkCore.Model.Validation[30000]
+      No store type was specified for the decimal property 'MinimumStockLevel' on entity type 'Ingredient'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+No store type was specified for the decimal property 'MinimumStockLevel' on entity type 'Ingredient'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+warn: Microsoft.EntityFrameworkCore.Model.Validation[30000]
+      No store type was specified for the decimal property 'Price' on entity type 'Product'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+No store type was specified for the decimal property 'Price' on entity type 'Product'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+System.InvalidOperationException: An error was generated for warning 'Microsoft.EntityFrameworkCore.Migrations.PendingModelChangesWarning': The model for context 'ApplicationDbContext' has pending changes. Add a new migration before updating the database. See https://aka.ms/efcore-docs-pending-changes. This exception can be suppressed or logged by passing event ID 'RelationalEventId.PendingModelChangesWarning' to the 'ConfigureWarnings' method in 'DbContext.OnConfiguring' or 'AddDbContext'.
+   at Microsoft.EntityFrameworkCore.Diagnostics.EventDefinition`1.Log[TLoggerCategory](IDiagnosticsLogger`1 logger, TParam arg)
+   at Microsoft.EntityFrameworkCore.Diagnostics.RelationalLoggerExtensions.PendingModelChangesWarning(IDiagnosticsLogger`1 diagnostics, Type contextType)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.Migrator.ValidateMigrations(Boolean useTransaction, String targetMigration)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.Migrator.Migrate(String targetMigration)
+   at Microsoft.EntityFrameworkCore.Design.Internal.MigrationsOperations.UpdateDatabase(String targetMigration, String connectionString, String contextType)
+   at Microsoft.EntityFrameworkCore.Design.OperationExecutor.UpdateDatabaseImpl(String targetMigration, String connectionString, String contextType)
+   at Microsoft.EntityFrameworkCore.Design.OperationExecutor.UpdateDatabase.<>c__DisplayClass0_0.<.ctor>b__0()
+   at Microsoft.EntityFrameworkCore.Design.OperationExecutor.OperationBase.Execute(Action action)
+An error was generated for warning 'Microsoft.EntityFrameworkCore.Migrations.PendingModelChangesWarning': The model for context 'ApplicationDbContext' has pending changes. Add a new migration before updating the database. See https://aka.ms/efcore-docs-pending-changes. This exception can be suppressed or logged by passing event ID 'RelationalEventId.PendingModelChangesWarning' to the 'ConfigureWarnings' method in 'DbContext.OnConfiguring' or 'AddDbContext'.

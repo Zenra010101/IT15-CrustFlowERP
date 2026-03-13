@@ -1,0 +1,194 @@
+@model CrustFlowERP.Models.Purchasing.PurchaseOrder
+@using CrustFlowERP.Models.Purchasing
+
+@{
+    ViewData["Title"] = $"Purchase Order {Model.OrderNumber}";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4 align-items-center">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-2">
+                    <li class="breadcrumb-item"><a asp-action="Index">Purchasing Dashboard</a></li>
+                    <li class="breadcrumb-item"><a asp-action="PurchaseOrders">Purchase Orders</a></li>
+                    <li class="breadcrumb-item active">PO Details</li>
+                </ol>
+            </nav>
+            <h2 class="fw-bold mb-0">Purchase Order: @Model.OrderNumber</h2>
+            <p class="text-muted">Issued on @Model.OrderDate.ToString("MMM dd, yyyy") to <span class="fw-bold text-dark">@Model.Supplier?.Name</span></p>
+        </div>
+        <div class="col-auto">
+            <div class="btn-group shadow-sm">
+                <a asp-action="PurchaseOrders" class="btn btn-outline-secondary px-4">
+                    <i class="fas fa-arrow-left me-2"></i> Back to List
+                </a>
+                <a asp-action="DownloadPurchaseOrder" asp-route-id="@Model.Id" class="btn btn-primary px-4 shadow-sm fw-bold">
+                    <i class="fas fa-file-pdf me-2"></i> Download PO PDF
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Order Overview & Metadata -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 bg-white mb-4">
+                <div class="card-header bg-transparent py-3 border-0">
+                    <h5 class="fw-bold text-dark mb-0"><i class="fas fa-list-check me-2 text-primary"></i> Order Line Items</h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <thead class="bg-light bg-opacity-50">
+                            <tr>
+                                <th class="ps-4">No.</th>
+                                <th>Ingredient</th>
+                                <th class="text-center">Quantity</th>
+                                <th class="text-end">Unit Price (₱)</th>
+                                <th class="text-end pe-4">Total Amount (₱)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{ int lineNum = 1; }
+                            @foreach (var item in Model.PurchaseOrderDetails)
+                            {
+                                <tr>
+                                    <td class="ps-4 text-muted">@lineNum.</td>
+                                    <td>
+                                        <div class="fw-bold text-dark">@item.Ingredient?.Name</div>
+                                        <div class="small text-muted">@item.Ingredient?.Category</div>
+                                    </td>
+                                    <td class="text-center">
+                                         <span class="fw-bold text-dark">@item.Quantity.ToString("N0")</span>
+                                         <span class="small text-muted ms-1">@item.Ingredient?.Unit</span>
+                                    </td>
+                                    <td class="text-end fw-semibold">@item.UnitPrice.ToString("N2")</td>
+                                    <td class="text-end pe-4 fw-bold text-primary">₱@item.TotalPrice.ToString("N2")</td>
+                                </tr>
+                                lineNum++;
+                            }
+                        </tbody>
+                        <tfoot class="bg-light bg-opacity-25">
+                            <tr>
+                                <td colspan="4" class="text-end fw-bold py-3 text-muted text-uppercase small">Estimated Grand Total</td>
+                                <td class="text-end pe-4 py-3">
+                                    <h4 class="fw-bold text-dark mb-0">₱@Model.TotalAmount.ToString("N2")</h4>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Notes & Log Section -->
+            <div class="card border-0 shadow-sm rounded-4 bg-white">
+                <div class="card-header bg-transparent py-3 border-0">
+                    <h5 class="fw-bold text-dark mb-0"><i class="fas fa-comment-dots me-2 text-info"></i> Official Notes</h5>
+                </div>
+                <div class="card-body p-4 pt-0">
+                    <div class="p-3 bg-light rounded-3 text-muted">
+                        @(!string.IsNullOrEmpty(Model.Notes) ? Model.Notes : "No special instructions or notes specified for this purchase order.")
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar Info -->
+        <div class="col-lg-4">
+            <!-- Status Card -->
+            <div class="card border-0 shadow-sm rounded-4 mb-4 bg-white overflow-hidden">
+                <div class="card-body p-4 text-center">
+                    <small class="text-muted text-uppercase fw-bold d-block mb-3">Order Status</small>
+                    @{
+                        string statusClass = Model.Status switch
+                        {
+                            PurchaseOrderStatus.Draft => "bg-secondary",
+                            PurchaseOrderStatus.Pending => "bg-info",
+                            PurchaseOrderStatus.Ordered => "bg-primary",
+                            PurchaseOrderStatus.Received => "bg-success",
+                            PurchaseOrderStatus.PartiallyReceived => "bg-warning",
+                            PurchaseOrderStatus.Cancelled => "bg-danger",
+                            _ => "bg-light"
+                        };
+                        string statusIcon = Model.Status switch
+                        {
+                            PurchaseOrderStatus.Draft => "fa-pencil-ruler",
+                            PurchaseOrderStatus.Pending => "fa-clock",
+                            PurchaseOrderStatus.Ordered => "fa-paper-plane",
+                            PurchaseOrderStatus.Received => "fa-check-double",
+                            _ => "fa-circle-info"
+                        };
+                    }
+                    <div class="@statusClass bg-opacity-10 p-4 rounded-circle d-inline-block mb-4">
+                        <i class="fas @statusIcon fa-3x @(Model.Status == PurchaseOrderStatus.Draft ? "text-secondary" : statusClass.Replace("bg-", "text-")) opacity-75"></i>
+                    </div>
+                    <h2 class="fw-bold @(Model.Status == PurchaseOrderStatus.Draft ? "text-secondary" : statusClass.Replace("bg-", "text-")) mb-0">@Model.Status</h2>
+                </div>
+                <div class="card-footer bg-light border-0 py-3">
+                    <div class="d-grid gap-2">
+                        @if (Model.Status == PurchaseOrderStatus.Pending)
+                        {
+                            <button type="button" class="btn btn-primary rounded-pill shadow-sm py-2 fw-bold">Request Confirmation</button>
+                        }
+                        @if (Model.Status == PurchaseOrderStatus.Ordered)
+                        {
+                            <button type="button" class="btn btn-success rounded-pill shadow-sm py-2 fw-bold">Confirm Receipts</button>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Supplier Detail Card -->
+            <div class="card border-0 shadow-sm rounded-4 mb-4 bg-white">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold text-muted text-uppercase mb-4">Supplier Information</h6>
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="bg-primary p-3 rounded-3 me-3 text-white">
+                            <i class="fas fa-truck-loading fa-lg"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold text-dark mb-0">@Model.Supplier?.Name</h5>
+                            <span class="small text-muted">@Model.Supplier?.Category</span>
+                        </div>
+                    </div>
+                    <ul class="list-group list-group-flush small">
+                        <li class="list-group-item d-flex justify-content-between px-0 py-3">
+                            <span class="text-muted">Contact Person</span>
+                            <span class="fw-bold">@Model.Supplier?.ContactName</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between px-0 py-3 border-0">
+                            <span class="text-muted">Expected Delivery</span>
+                            <span class="fw-bold text-dark">@(Model.ExpectedDeliveryDate?.ToString("MMM dd, yyyy") ?? "As Soon As Possible")</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+             <!-- Metadata Card -->
+            <div class="card border-0 shadow-sm rounded-4 bg-dark bg-opacity-10 border border-dark border-opacity-10">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold text-dark text-uppercase small mb-3">Audit Information</h6>
+                    <div class="small d-flex flex-column gap-2 text-muted">
+                        <div class="d-flex justify-content-between">
+                            <span>PO System ID:</span>
+                            <span class="fw-bold text-dark">#@Model.Id</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Created At:</span>
+                            <span class="fw-bold text-dark">@Model.CreatedAt.ToString("MMM dd, yyyy HH:mm")</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Last Updated:</span>
+                            <span class="fw-bold text-dark">@Model.UpdatedAt.ToString("MMM dd, yyyy HH:mm")</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card { border-radius: 12px; }
+    .table thead th { font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; }
+</style>

@@ -1,0 +1,114 @@
+@model CrustFlowERP.Models.Production.Ingredient
+@{
+    ViewData["Title"] = "Add Ingredient";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-action="Index">Ingredients</a></li>
+                    <li class="breadcrumb-item active">Add Ingredient</li>
+                </ol>
+            </nav>
+            <h3 class="fw-bold"><i class="fas fa-plus-circle text-primary me-2"></i> Add New Ingredient</h3>
+            <p class="text-muted">Register a new raw material or ingredient in the master list.</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm" style="border-radius: 15px;">
+                <div class="card-body p-4">
+                    <form asp-action="Create" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Ingredient Name</label>
+                                <input asp-for="Name" class="form-control border-0 bg-light" placeholder="e.g. Bread Flour" required style="border-radius: 10px; height: 45px;">
+                                <span asp-validation-for="Name" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Minor Category</label>
+                                <select asp-for="Category" class="form-select border-0 bg-light" asp-items="Html.GetEnumSelectList<CrustFlowERP.Models.SupplyCategory>()" style="border-radius: 10px; height: 45px;">
+                                </select>
+                                <span asp-validation-for="Category" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Inventory Category (Major)</label>
+                                <select asp-for="InventoryCategory" class="form-select border-0 bg-light" asp-items="Html.GetEnumSelectList<CrustFlowERP.Models.InventoryCategory>()" style="border-radius: 10px; height: 45px;">
+                                </select>
+                                <span asp-validation-for="InventoryCategory" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Unit of Measure</label>
+                                <select asp-for="Unit" class="form-select border-0 bg-light" style="border-radius: 10px; height: 45px;">
+                                    <option value="kg">Kilograms (kg)</option>
+                                    <option value="g">Grams (g)</option>
+                                    <option value="liters">Liters (L)</option>
+                                    <option value="ml">Milliliters (mL)</option>
+                                    <option value="pcs">Pieces (pcs)</option>
+                                    <option value="bags">Bags</option>
+                                    <option value="boxes">Boxes</option>
+                                </select>
+                                <span asp-validation-for="Unit" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Minimum Stock Level</label>
+                                <input asp-for="MinimumStockLevel" type="number" step="0.0001" class="form-control border-0 bg-light" placeholder="0.00" style="border-radius: 10px; height: 45px;">
+                                <span asp-validation-for="MinimumStockLevel" class="text-danger small"></span>
+                            </div>
+
+
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Status</label>
+                                <div class="form-check form-switch mt-2">
+                                    <input class="form-check-input" type="checkbox" asp-for="IsActive" checked>
+                                    <label class="form-check-label" asp-for="IsActive">Active Ingredient</label>
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label fw-bold">Description (Optional)</label>
+                                <textarea asp-for="Description" class="form-control border-0 bg-light" rows="3" placeholder="Additional notes about this ingredient..." style="border-radius: 10px;"></textarea>
+                                <span asp-validation-for="Description" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 pt-4 border-top d-flex gap-2">
+                            <button type="submit" class="btn btn-primary rounded-pill px-5 py-2 fw-bold shadow-sm">
+                                <i class="fas fa-save me-2"></i> Create Ingredient
+                            </button>
+                            <a asp-action="Index" class="btn btn-outline-secondary rounded-pill px-4 py-2">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm bg-primary text-white" style="border-radius: 15px;">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-3"><i class="fas fa-info-circle me-2"></i> Pro Tip</h5>
+                    <p class="mb-0 small opacity-75">
+                        Categorizing ingredients correctly helps in filtering during inventory receiving. 
+                        Setting a minimum stock level will trigger alerts when supplies are running low.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

@@ -1,0 +1,354 @@
+@using CrustFlowERP.Models.Production
+@{
+    ViewData["Title"] = "Elite Insight Hub - CrustFlowERP";
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
+<style>
+    :root {
+        --accent-glow: rgba(99, 102, 241, 0.15);
+        --glass-white: rgba(255, 255, 255, 0.8);
+        --glass-border: rgba(255, 255, 255, 0.3);
+    }
+
+    body {
+        background-color: #f8fafc;
+        background-image: 
+            radial-gradient(at 0% 0%, hsla(253,16%,7%,0.03) 0, transparent 50%), 
+            radial-gradient(at 50% 0%, hsla(225,39%,30%,0.03) 0, transparent 50%), 
+            radial-gradient(at 100% 0%, hsla(339,49%,30%,0.03) 0, transparent 50%);
+    }
+
+    .main-grid {
+        display: grid;
+        grid-template-columns: 1fr 350px;
+        gap: 30px;
+    }
+
+    .glass-panel {
+        background: var(--glass-white);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border);
+        border-radius: 32px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.03);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .kpi-stat-card {
+        padding: 30px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .kpi-stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 50px rgba(99, 102, 241, 0.12);
+        border-color: #6366f1;
+    }
+
+    .kpi-icon-premium {
+        width: 60px;
+        height: 60px;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 20px;
+        background: white;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    }
+
+    .progress-circle-premium {
+        width: 100px;
+        height: 100px;
+        position: relative;
+    }
+
+    .circle-svg {
+        transform: rotate(-90deg);
+        width: 100px;
+        height: 100px;
+    }
+
+    .circle-track { fill: none; stroke: #f1f5f9; stroke-width: 8; }
+    .circle-value {
+        fill: none;
+        stroke-width: 8;
+        stroke-linecap: round;
+        transition: stroke-dashoffset 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .management-btn {
+        width: 100%;
+        text-align: left;
+        padding: 16px 20px;
+        margin-bottom: 12px;
+        border-radius: 18px;
+        border: 1px solid transparent;
+        background: white;
+        color: #1e293b;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        transition: all 0.2s;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+    }
+
+    .management-btn:hover {
+        background: #1e293b;
+        color: white;
+        transform: translateX(8px);
+    }
+
+    .management-btn i {
+        width: 35px;
+        height: 35px;
+        border-radius: 10px;
+        background: #f1f5f9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+        transition: all 0.2s;
+    }
+
+    .management-btn:hover i {
+        background: rgba(255,255,255,0.1);
+        color: white;
+    }
+
+    .critical-badge {
+        background: #fee2e2;
+        color: #ef4444;
+        font-size: 0.65rem;
+        font-weight: 800;
+        padding: 4px 10px;
+        border-radius: 50px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    @@media (max-width: 1200px) {
+        .main-grid { grid-template-columns: 1fr; }
+    }
+</style>
+
+<div class="container-fluid py-4 px-lg-5">
+    <!-- Sophisticated Header -->
+    <div class="row align-items-center mb-5 animate__animated animate__fadeIn">
+        <div class="col-lg-7">
+            <h1 class="fw-bold text-dark display-5 mb-1" style="letter-spacing: -2px;">Operational Intelligence</h1>
+            <p class="text-secondary lead mb-0">Managerial Oversight & Real-time Efficiency Matrix</p>
+        </div>
+        <div class="col-lg-5 text-lg-end mt-4 mt-lg-0">
+            <div class="d-flex justify-content-lg-end gap-3">
+                <div class="glass-panel px-4 py-3 d-flex align-items-center shadow-sm">
+                    <div class="me-3 text-start">
+                        <div class="small text-muted fw-bold text-uppercase" style="font-size: 0.65rem;">System Health</div>
+                        <div class="fw-bold text-success"><i class="fas fa-check-circle me-1"></i> Synchronized</div>
+                    </div>
+                </div>
+                <a asp-action="Reports" class="btn btn-dark rounded-pill px-5 py-3 fw-bold shadow-lg">
+                    <i class="fas fa-chart-line me-2"></i> Analytics Hub
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-grid">
+        <div class="feed-section">
+            <!-- Top KPIs Pulse -->
+            <div class="row g-4 mb-5">
+                <!-- Efficiency -->
+                <div class="col-md-6 col-xl-4 animate__animated animate__fadeInUp" style="animation-delay: 0.1s;">
+                    <div class="glass-panel kpi-stat-card">
+                        <div class="d-flex justify-content-between align-items-start mb-4">
+                            <div class="kpi-icon-premium" style="color: #6366f1;">
+                                <i class="fas fa-bolt"></i>
+                            </div>
+                            <div class="progress-circle-premium">
+                                <svg class="circle-svg">
+                                    <circle class="circle-track" cx="50" cy="50" r="40"></circle>
+                                    <circle class="circle-value" cx="50" cy="50" r="40" 
+                                            style="stroke: #6366f1; stroke-dasharray: 251.2; stroke-dashoffset: @(251.2m - (251.2m * (decimal)ViewBag.ProductionEfficiency / 100m))"></circle>
+                                </svg>
+                                <div class="position-absolute top-50 start-50 translate-middle fw-bold text-dark">
+                                    @Math.Round(ViewBag.ProductionEfficiency, 0)%
+                                </div>
+                            </div>
+                        </div>
+                        <h6 class="text-muted text-uppercase fw-bold small mb-1" style="letter-spacing: 1px;">Production Efficiency</h6>
+                        <div class="h2 fw-bold text-dark mb-0">Peak Performance</div>
+                        <div class="small text-secondary fw-medium mt-2">
+                            <i class="fas fa-arrow-up text-success me-1"></i> Optimal Yield Cycle
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quality -->
+                <div class="col-md-6 col-xl-4 animate__animated animate__fadeInUp" style="animation-delay: 0.2s;">
+                    <div class="glass-panel kpi-stat-card">
+                        <div class="d-flex justify-content-between align-items-start mb-4">
+                            <div class="kpi-icon-premium" style="color: #a855f7;">
+                                <i class="fas fa-check-double"></i>
+                            </div>
+                            <div class="progress-circle-premium">
+                                <svg class="circle-svg">
+                                    <circle class="circle-track" cx="50" cy="50" r="40"></circle>
+                                    <circle class="circle-value" cx="50" cy="50" r="40" 
+                                            style="stroke: #a855f7; stroke-dasharray: 251.2; stroke-dashoffset: @(251.2m - (251.2m * (decimal)ViewBag.QualityPassRate / 100m))"></circle>
+                                </svg>
+                                <div class="position-absolute top-50 start-50 translate-middle fw-bold text-dark">
+                                    @Math.Round(ViewBag.QualityPassRate, 0)%
+                                </div>
+                            </div>
+                        </div>
+                        <h6 class="text-muted text-uppercase fw-bold small mb-1" style="letter-spacing: 1px;">Quality Pass Rate</h6>
+                        <div class="h2 fw-bold text-dark mb-0">High Integrity</div>
+                        <div class="small text-secondary fw-medium mt-2">
+                            <i class="fas fa-shield-alt text-primary me-1"></i> Consistent Standards
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Revenue Today -->
+                <div class="col-md-6 col-xl-4 animate__animated animate__fadeInUp" style="animation-delay: 0.3s;">
+                    <div class="glass-panel kpi-stat-card" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);">
+                        <div class="d-flex justify-content-between align-items-center mb-5">
+                            <div class="bg-white bg-opacity-10 p-3 rounded-4 text-white">
+                                <i class="fas fa-coins fa-lg"></i>
+                            </div>
+                            <span class="badge bg-success bg-opacity-25 text-success rounded-pill px-3 py-2 fw-bold">LIVE FEED</span>
+                        </div>
+                        <h6 class="text-light text-opacity-50 text-uppercase fw-bold small mb-1">Financial Inflow Today</h6>
+                        <div class="h1 fw-bold text-white mb-2" style="letter-spacing: -2px;">₱@ViewBag.SalesToday.ToString("N0")</div>
+                        
+                        <div class="progress bg-white bg-opacity-10 rounded-pill mb-2" style="height: 6px;">
+                            <div class="progress-bar bg-success" style="width: @ViewBag.SalesTargetProgress%"></div>
+                        </div>
+                        <div class="d-flex justify-content-between small text-white text-opacity-50 fw-bold">
+                            <span>Daily Velocity</span>
+                            <span>@Math.Round((decimal)ViewBag.SalesTargetProgress, 0)%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Production Chart -->
+            <div class="glass-panel p-5 mb-5 animate__animated animate__fadeInLeft" style="animation-delay: 0.4s;">
+                <div class="d-flex justify-content-between align-items-center mb-5">
+                    <div>
+                        <h4 class="fw-bold text-dark">Manufacturing Trends</h4>
+                        <p class="text-muted mb-0">30-day comparative production analysis</p>
+                    </div>
+                    <div class="btn-group shadow-sm rounded-pill overflow-hidden border">
+                        <button class="btn btn-white px-4 fw-bold active border-0">Actual</button>
+                        <button class="btn btn-light px-4 fw-bold border-0">Target</button>
+                    </div>
+                </div>
+                <div style="height: 350px;">
+                    <canvas id="mainTrendsChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar-section">
+            <!-- Inventory Health Signal -->
+            <div class="glass-panel p-4 mb-4 animate__animated animate__fadeInRight" style="animation-delay: 0.2s;">
+                <h6 class="fw-bold text-dark mb-3 d-flex justify-content-between align-items-center">
+                    Inventory Integrity
+                    <span class="text-muted fw-normal" style="font-size: 0.7rem;">@Math.Round(ViewBag.InventoryHealth, 0)% Healthy</span>
+                </h6>
+                
+                @if (ViewBag.CriticalIngredients != null)
+                {
+                    <div class="list-group list-group-flush border-0">
+                        @foreach (var ing in (IEnumerable<IngredientStockDto>)ViewBag.CriticalIngredients)
+                        {
+                            <div class="list-group-item bg-transparent border-0 px-0 d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="fw-bold text-dark small">@ing.Name</div>
+                                    <div class="smaller text-muted">@ing.Stock @ing.Unit</div>
+                                </div>
+                                <span class="critical-badge">CRITICAL</span>
+                            </div>
+                        }
+                    </div>
+                }
+                
+                <a asp-action="Inventory" class="btn btn-link text-decoration-none w-100 text-center fw-bold small text-primary mt-3">
+                    View Asset Map <i class="fas fa-arrow-right ms-2 mt-1" style="font-size: 0.7rem;"></i>
+                </a>
+            </div>
+
+
+            <!-- Quick Profile -->
+            <div class="glass-panel p-4 text-center animate__animated animate__fadeInRight" style="animation-delay: 0.4s;">
+                <div class="avatar-bg bg-dark rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center text-white fw-bold" style="width: 65px; height: 65px; font-size: 1.5rem;">
+                    @ViewBag.UserEmail.Substring(0, 1).ToUpper()
+                </div>
+                <h6 class="fw-bold text-dark mb-1">Executive Manager</h6>
+                <p class="text-muted small mb-0">@ViewBag.UserEmail</p>
+                <hr class="my-4 opacity-5">
+                <a asp-controller="Account" asp-action="Logout" class="btn btn-outline-danger w-100 rounded-pill fw-bold btn-sm">Sign Out</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('mainTrendsChart').getContext('2d');
+        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(99, 102, 241, 0.2)');
+        gradient.addColorStop(1, 'rgba(99, 102, 241, 0)');
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5'],
+                datasets: [{
+                    label: 'Actual Yield',
+                    data: [1240, 1560, 1420, 1890, 1750],
+                    borderColor: '#6366f1',
+                    borderWidth: 5,
+                    backgroundColor: gradient,
+                    fill: true,
+                    tension: 0.45,
+                    pointRadius: 6,
+                    pointBackgroundColor: '#fff',
+                    pointBorderWidth: 4,
+                    pointHoverRadius: 8
+                }, {
+                    label: 'Target Goal',
+                    data: [1500, 1500, 1500, 1500, 1500],
+                    borderColor: '#cbd5e1',
+                    borderWidth: 2,
+                    borderDash: [10, 5],
+                    fill: false,
+                    pointRadius: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { borderDash: [5, 5], color: '#f1f5f9' },
+                        ticks: { padding: 10, font: { weight: 'bold' } }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { padding: 10, font: { weight: 'bold' } }
+                    }
+                }
+            }
+        });
+    });
+</script>
+

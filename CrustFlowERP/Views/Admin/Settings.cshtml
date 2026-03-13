@@ -1,0 +1,131 @@
+@{
+    ViewData["Title"] = "Settings";
+}
+
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="page-title-box">
+                <h3>Settings</h3>
+                <p>Manage system settings and configurations.</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row g-4">
+        <!-- General Settings -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-bottom-0 py-3">
+                    <h5 class="card-title mb-0 fw-bold">General Settings</h5>
+                </div>
+                <div class="card-body">
+                    <form>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Company Name</label>
+                            <input type="text" class="form-control" value="CrustFlowERP" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Company Email</label>
+                            <input type="email" class="form-control" value="admin@crustflow.com" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Default Currency</label>
+                            <select class="form-select">
+                                <option value="USD" selected>USD - US Dollar</option>
+                                <option value="EUR">EUR - Euro</option>
+                                <option value="GBP">GBP - British Pound</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Time Zone</label>
+                            <select class="form-select">
+                                <option value="UTC" selected>UTC</option>
+                                <option value="EST">EST</option>
+                                <option value="PST">PST</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-admin-primary">Save Settings</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Notification Settings -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-bottom-0 py-3">
+                    <h5 class="card-title mb-0 fw-bold">Notification Settings</h5>
+                </div>
+                <div class="card-body">
+                    <form>
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="emailNotifications" checked>
+                            <label class="form-check-label" for="emailNotifications">
+                                Email Notifications
+                            </label>
+                        </div>
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="lowStockAlerts" checked>
+                            <label class="form-check-label" for="lowStockAlerts">
+                                Low Stock Alerts
+                            </label>
+                        </div>
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="dailyReports" checked>
+                            <label class="form-check-label" for="dailyReports">
+                                Daily Reports
+                            </label>
+                        </div>
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="userActivity" checked>
+                            <label class="form-check-label" for="userActivity">
+                                User Activity Logs
+                            </label>
+                        </div>
+                        <button type="submit" class="btn btn-admin-primary">Save Settings</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Logout function
+function logoutUser() {
+    console.log('Attempting logout...');
+    
+    // Method 1: Try to submit the hidden form first
+    const logoutForm = document.getElementById('logoutForm');
+    if (logoutForm) {
+        try {
+            logoutForm.submit();
+            console.log('Logout form submitted successfully');
+            return;
+        } catch (error) {
+            console.error('Error submitting logout form:', error);
+        }
+    }
+    
+    // Method 2: Direct fetch to AccountController Logout
+    fetch('/Account/Logout', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+        }
+    })
+    .then(response => {
+        console.log('Logout response:', response);
+        // Always redirect to login page, regardless of response
+        window.location.href = '/Account/Login';
+    })
+    .catch(error => {
+        console.error('Error during logout:', error);
+        // Even if there's an error, redirect to login page
+        window.location.href = '/Account/Login';
+    });
+}
+</script>

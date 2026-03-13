@@ -1,0 +1,51 @@
+@{
+    ViewData["Title"] = "Inventory Control";
+    Layout = "_AdminSidebarLayout";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">Inventory Control</h2>
+            <p class="text-muted">High-level stock management and procurement oversight</p>
+        </div>
+        <a asp-controller="Inventory" asp-action="Index" class="btn btn-primary rounded-pill px-4">
+            <i class="fas fa-boxes me-2"></i>Full Inventory View
+        </a>
+    </div>
+
+    <div class="alert alert-info rounded-4 border-0 shadow-sm d-flex align-items-center p-4">
+        <i class="fas fa-info-circle fa-2x me-3 opacity-50"></i>
+        <div>
+            <h6 class="fw-bold mb-1">Managerial Oversight</h6>
+            <p class="mb-0 small">As a General Manager, you have cross-departmental access to all stock levels, ingredient procurement, and supplier relationships.</p>
+        </div>
+    </div>
+
+    <div class="row g-4 mt-2">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 text-center p-4">
+                <i class="fas fa-bread-slice fa-3x text-primary mb-3"></i>
+                <h5 class="fw-bold">Finished Products</h5>
+                <p class="text-muted small">Monitor available-for-sale inventory levels.</p>
+                <a asp-controller="Products" asp-action="Index" class="btn btn-light btn-sm rounded-pill">Manage Products</a>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 text-center p-4">
+                <i class="fas fa-seedling fa-3x text-success mb-3"></i>
+                <h5 class="fw-bold">Raw Ingredients</h5>
+                <p class="text-muted small">Track base materials and consumption rates.</p>
+                <a asp-controller="Ingredients" asp-action="Index" class="btn btn-light btn-sm rounded-pill">Manage Ingredients</a>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 text-center p-4">
+                <i class="fas fa-truck-loading fa-3x text-warning mb-3"></i>
+                <h5 class="fw-bold">Procurement</h5>
+                <p class="text-muted small">Oversee purchase orders and supplier performance.</p>
+                <a asp-controller="Purchasing" asp-action="PurchaseOrders" class="btn btn-light btn-sm rounded-pill">Purchase Orders</a>
+            </div>
+        </div>
+    </div>
+</div>

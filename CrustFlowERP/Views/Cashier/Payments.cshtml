@@ -1,0 +1,201 @@
+@{
+    ViewData["Title"] = "Payments";
+}
+
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="page-title-box">
+                <h3>Payments</h3>
+                <p>Process and manage payment transactions.</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row g-4">
+        <!-- Payment Form -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-bottom-0 py-3">
+                    <h5 class="card-title mb-0 fw-bold">Process Payment</h5>
+                </div>
+                <div class="card-body">
+                    <form>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Order ID</label>
+                                <input type="text" class="form-control" placeholder="Enter order ID" value="#ORD-001">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Amount Due</label>
+                                <input type="text" class="form-control" value="₱45.99" readonly>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Payment Method</label>
+                            <div class="row g-2">
+                                <div class="col-md-3">
+                                    <div class="card border-2 text-center p-3">
+                                        <input type="radio" name="paymentMethod" id="cash" value="cash" class="form-check-input" checked>
+                                        <label for="cash" class="form-check-label w-100">
+                                            <i class="fas fa-money-bill-wave fa-2x text-success mb-2"></i>
+                                            <div>Cash</div>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card border-2 text-center p-3">
+                                        <input type="radio" name="paymentMethod" id="gcash" value="gcash" class="form-check-input">
+                                        <label for="gcash" class="form-check-label w-100">
+                                            <i class="fas fa-wallet fa-2x text-info mb-2"></i>
+                                            <div>G-Cash</div>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card border-2 text-center p-3">
+                                        <input type="radio" name="paymentMethod" id="other" value="other" class="form-check-input">
+                                        <label for="other" class="form-check-label w-100">
+                                            <i class="fas fa-ellipsis-h fa-2x text-secondary mb-2"></i>
+                                            <div>Other</div>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        
+                        <!-- Cash Payment Details (shown when cash is selected) -->
+                        <div id="cashDetails">
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Cash Received</label>
+                                    <input type="text" class="form-control" placeholder="Enter amount received">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Change Due</label>
+                                    <input type="text" class="form-control" value="₱0.00" readonly>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="mb-0">Total Amount: <span class="text-primary fw-bold">₱45.99</span></h5>
+                            </div>
+                            <div>
+                                <button type="button" class="btn btn-outline-secondary me-2">Cancel</button>
+                                <button type="submit" class="btn btn-admin-primary">Process Payment</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Payments -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-bottom-0 py-3">
+                    <h5 class="card-title mb-0 fw-bold">Recent Payments</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">#ORD-001</h6>
+                                <small class="text-muted">Cash - 5 mins ago</small>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-success text-white">₱45.99</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">#ORD-002</h6>
+                                <small class="text-muted">Card - 15 mins ago</small>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-success text-white">₱23.50</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">#ORD-003</h6>
+                                <small class="text-muted">Mobile - 30 mins ago</small>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-success text-white">₱67.25</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">#ORD-004</h6>
+                                <small class="text-muted">Cash - 1 hour ago</small>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-success text-white">₱89.99</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Toggle payment details based on payment method
+document.addEventListener('DOMContentLoaded', function() {
+    const paymentMethods = document.querySelectorAll('input[name="paymentMethod"]');
+    const cashDetails = document.getElementById('cashDetails');
+    
+    paymentMethods.forEach(method => {
+        method.addEventListener('change', function() {
+            if (this.value === 'cash') {
+                cashDetails.classList.remove('d-none');
+            } else {
+                cashDetails.classList.add('d-none');
+            }
+        });
+    });
+});
+
+// Logout function
+function logoutUser() {
+    console.log('Attempting logout...');
+    
+    // Method 1: Try to submit the hidden form first
+    const logoutForm = document.getElementById('logoutForm');
+    if (logoutForm) {
+        try {
+            logoutForm.submit();
+            console.log('Logout form submitted successfully');
+            return;
+        } catch (error) {
+            console.error('Error submitting logout form:', error);
+        }
+    }
+    
+    // Method 2: Direct fetch to AccountController Logout
+    fetch('/Account/Logout', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+        }
+    })
+    .then(response => {
+        console.log('Logout response:', response);
+        // Always redirect to login page, regardless of response
+        window.location.href = '/Account/Login';
+    })
+    .catch(error => {
+        console.error('Error during logout:', error);
+        // Even if there's an error, redirect to login page
+        window.location.href = '/Account/Login';
+    });
+}
+</script>

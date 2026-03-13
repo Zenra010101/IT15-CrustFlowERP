@@ -1,0 +1,150 @@
+@using CrustFlowERP.Models.Production
+@{
+    ViewData["Title"] = "Production Manager Dashboard";
+    Layout = "~/Views/Shared/_AdminSidebarLayout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="page-title-box">
+                <h3 class="fw-bold text-dark">Production Manager Dashboard</h3>
+                <p class="text-muted">Monitor and coordinate bakery production efficiency.</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm p-4 rounded-4 bg-white">
+                <div class="d-flex align-items-center">
+                    <div class="stats-icon bg-soft-primary me-3 text-primary">
+                        <i class="fas fa-clipboard-list fa-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="mb-0 fw-bold">@ViewBag.ActiveOrders</h3>
+                        <p class="small text-muted mb-0 fw-semibold text-uppercase">Active Orders</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm p-4 rounded-4 bg-white">
+                <div class="d-flex align-items-center">
+                    <div class="stats-icon bg-soft-success me-3 text-success">
+                        <i class="fas fa-check-circle fa-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="mb-0 fw-bold">@ViewBag.BatchesToday</h3>
+                        <p class="small text-muted mb-0 fw-semibold text-uppercase">Batches Today</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm p-4 rounded-4 bg-white">
+                <div class="d-flex align-items-center">
+                    <div class="stats-icon bg-soft-danger me-3 text-danger">
+                        <i class="fas fa-trash-alt fa-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="mb-0 fw-bold">@ViewBag.WastageToday.ToString("N0")</h3>
+                        <p class="small text-muted mb-0 fw-semibold text-uppercase">Wastage Today</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
+                <div class="card-header bg-white border-bottom py-3 px-4">
+                    <h5 class="fw-bold mb-0 text-primary d-flex align-items-center">
+                        <i class="fas fa-history me-2"></i> Recent Production Activity
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="ps-4">Timestamp</th>
+                                    <th>Order #</th>
+                                    <th>Product</th>
+                                    <th>Activity</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (ViewBag.RecentLogs != null && ((List<ProductionLog>)ViewBag.RecentLogs).Any())
+                                {
+                                    foreach (var log in (List<ProductionLog>)ViewBag.RecentLogs)
+                                    {
+                                        <tr>
+                                            <td class="ps-4">
+                                                <small class="text-muted d-block">@log.Timestamp.ToString("hh:mm tt")</small>
+                                                <small class="text-secondary">@log.Timestamp.ToString("MMM dd")</small>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-light text-dark border">#PROD-@log.ProductionOrderId.ToString("D4")</span>
+                                            </td>
+                                            <td class="fw-bold">@log.ProductionOrder?.Product?.Name</td>
+                                            <td>@log.ActivityDescription</td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="4" class="text-center py-5">
+                                            <i class="fas fa-info-circle fa-2x opacity-25 mb-3 d-block"></i>
+                                            <p class="mb-0">No production logs recorded yet.</p>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-header bg-white border-bottom py-3 px-4">
+                    <h5 class="fw-bold mb-0"><i class="fas fa-layer-group me-2 text-warning"></i> Quick Operations</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="d-grid gap-3">
+                        <a href="@Url.Action("Index", "ProductionOrders")" class="btn btn-primary p-3 rounded-4 shadow-sm text-start d-flex align-items-center">
+                            <i class="fas fa-calendar-alt fa-2x me-3 opacity-50"></i>
+                            <div>
+                                <h6 class="mb-0 fw-bold">Live Schedule</h6>
+                                <small class="opacity-75">View & manage all batches</small>
+                            </div>
+                        </a>
+                        <a href="@Url.Action("Create", "ProductionOrders")" class="btn btn-soft-primary p-3 rounded-4 text-start d-flex align-items-center">
+                            <i class="fas fa-plus-circle fa-2x me-3 opacity-50"></i>
+                            <div>
+                                <h6 class="mb-0 fw-bold text-primary">New Batch</h6>
+                                <small class="text-primary opacity-75">Schedule a production run</small>
+                            </div>
+                        </a>
+                        <a href="@Url.Action("Index", "Inventory")" class="btn btn-light p-3 rounded-4 text-start d-flex align-items-center border">
+                            <i class="fas fa-boxes fa-2x me-3 opacity-50"></i>
+                            <div>
+                                <h6 class="mb-0 fw-bold">Inventory Check</h6>
+                                <small class="text-muted">Check ingredients availability</small>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .stats-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; }
+    .bg-soft-primary { background-color: rgba(13, 110, 253, 0.1); }
+    .bg-soft-success { background-color: rgba(25, 135, 84, 0.1); }
+</style>

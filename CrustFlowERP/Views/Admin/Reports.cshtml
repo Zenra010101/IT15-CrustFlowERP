@@ -1,0 +1,152 @@
+@{
+    ViewData["Title"] = "Reports";
+    Layout = "~/Views/Shared/_AdminSidebarLayout.cshtml";
+}
+
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="page-title-box">
+                <h3>Reports</h3>
+                <p>View and generate system reports.</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row g-4">
+        <!-- Sales Report -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-bottom-0 py-3">
+                    <h5 class="card-title mb-0 fw-bold">Sales Report</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Date Range</label>
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <input type="date" class="form-control" placeholder="Start Date">
+                            </div>
+                            <div class="col-md-6">
+                                <input type="date" class="form-control" placeholder="End Date">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Period</th>
+                                    <th>Sales</th>
+                                    <th>Revenue</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Today</td>
+                                    <td>45</td>
+                                    <td>₱1,234.50</td>
+                                </tr>
+                                <tr>
+                                    <td>This Week</td>
+                                    <td>312</td>
+                                    <td>₱8,456.75</td>
+                                </tr>
+                                <tr>
+                                    <td>This Month</td>
+                                    <td>1,245</td>
+                                    <td>₱34,567.25</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Inventory Report -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-bottom-0 py-3">
+                    <h5 class="card-title mb-0 fw-bold">Inventory Report</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <button class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-download me-1"></i> Export Report
+                        </button>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Category</th>
+                                    <th>Items</th>
+                                    <th>Low Stock</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Raw Materials</td>
+                                    <td>156</td>
+                                    <td><span class="badge bg-warning text-dark">12</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Finished Products</td>
+                                    <td>89</td>
+                                    <td><span class="badge bg-warning text-dark">5</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Packaging</td>
+                                    <td>45</td>
+                                    <td><span class="badge bg-success text-white">0</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Logout function
+function logoutUser() {
+    console.log('Attempting logout...');
+    
+    // Method 1: Try to submit the hidden form first
+    const logoutForm = document.getElementById('logoutForm');
+    if (logoutForm) {
+        try {
+            logoutForm.submit();
+            console.log('Logout form submitted successfully');
+            return;
+        } catch (error) {
+            console.error('Error submitting logout form:', error);
+        }
+    }
+    
+    // Method 2: Direct fetch to AccountController Logout
+    fetch('/Account/Logout', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+        }
+    })
+    .then(response => {
+        console.log('Logout response:', response);
+        // Always redirect to login page, regardless of response
+        window.location.href = '/Account/Login';
+    })
+    .catch(error => {
+        console.error('Error during logout:', error);
+        // Even if there's an error, redirect to login page
+        window.location.href = '/Account/Login';
+    });
+}
+</script>

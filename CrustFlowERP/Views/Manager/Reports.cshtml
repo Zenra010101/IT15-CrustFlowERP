@@ -1,0 +1,244 @@
+@{
+    ViewData["Title"] = "Financial Intelligence - CrustFlowERP";
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
+<style>
+    :root {
+        --fin-success: #10b981;
+        --fin-danger: #ef4444;
+        --fin-accent: #6366f1;
+        --glass-panel: rgba(255, 255, 255, 0.85);
+    }
+
+    .report-card-premium {
+        background: var(--glass-panel);
+        backdrop-filter: blur(25px);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        border-radius: 32px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04);
+        transition: all 0.4s ease;
+    }
+
+    .fin-value {
+        font-size: 2.2rem;
+        font-weight: 900;
+        letter-spacing: -1.5px;
+    }
+
+    .fin-label {
+        font-size: 0.75rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #64748b;
+    }
+
+    .table-luxury {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 15px;
+    }
+
+    .table-luxury tr {
+        background: white;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+        border-radius: 20px;
+    }
+
+    .table-luxury td {
+        padding: 25px;
+        border: none;
+    }
+
+    .table-luxury td:first-child { border-radius: 20px 0 0 20px; }
+    .table-luxury td:last-child { border-radius: 0 20px 20px 0; }
+
+    .gauge-container {
+        position: relative;
+        width: 100%;
+        height: 12px;
+        background: #f1f5f9;
+        border-radius: 50px;
+        overflow: hidden;
+    }
+
+    .gauge-bar {
+        height: 100%;
+        border-radius: 50px;
+        transition: width 1.5s cubic-bezier(0.1, 0.9, 0.2, 1);
+    }
+
+    .insight-vibe {
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        border-radius: 40px;
+        color: white;
+        padding: 50px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .insight-vibe::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 400px;
+        height: 400px;
+        background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 70%);
+        pointer-events: none;
+    }
+
+    @@media (max-width: 768px) {
+        .fin-value { font-size: 1.7rem; }
+        .insight-vibe { padding: 30px; border-radius: 25px; }
+    }
+</style>
+
+<div class="container-fluid py-4 px-lg-5">
+    <!-- Premium Header -->
+    <div class="row align-items-center mb-5 animate__animated animate__fadeIn">
+        <div class="col-md-8">
+            <h1 class="fw-bold text-dark display-5 mb-1" style="letter-spacing: -2px;">Corporate Fiscal Report</h1>
+            <p class="text-secondary lead mb-0">Monthly Executive Performance Analysis - @DateTime.Now.ToString("MMMM yyyy")</p>
+        </div>
+        <div class="col-md-4 text-md-end mt-4 mt-md-0">
+            <button class="btn btn-dark rounded-pill px-5 py-3 shadow-lg fw-bold" onclick="window.print()">
+                <i class="fas fa-print me-2"></i> Document Export
+            </button>
+        </div>
+    </div>
+
+    <!-- Snapshot Matrix -->
+    <div class="row g-4 mb-5">
+        <div class="col-xl-4 animate__animated animate__fadeInUp" style="animation-delay: 0.1s;">
+            <div class="report-card-premium p-4 h-100">
+                <div class="fin-label mb-3">Retained Monthly Earnings</div>
+                <div class="d-flex align-items-end gap-3 mb-1">
+                    <div class="fin-value @(ViewBag.NetProfit >= 0 ? "text-success" : "text-danger")">₱@ViewBag.NetProfit.ToString("N0")</div>
+                    <div class="badge rounded-pill @(ViewBag.NetProfit >= 0 ? "bg-success" : "bg-danger") bg-opacity-10 @(ViewBag.NetProfit >= 0 ? "text-success" : "text-danger") mb-2 p-2 px-3 fw-bold">
+                        <i class="fas @(ViewBag.NetProfit >= 0 ? "fa-arrow-trend-up" : "fa-arrow-trend-down") me-1"></i> Performance
+                    </div>
+                </div>
+                <div class="small text-muted fw-medium">Operational surplus after all dynamic deductions</div>
+            </div>
+        </div>
+
+        <div class="col-xl-4 animate__animated animate__fadeInUp" style="animation-delay: 0.2s;">
+            <div class="report-card-premium p-4 h-100">
+                <div class="fin-label mb-3">Gross Target Acquisition</div>
+                <div class="d-flex justify-content-between align-items-end mb-2">
+                    <div class="fin-value text-dark">@Math.Round(ViewBag.SalesTargetProgress, 1)%</div>
+                    <div class="text-end small fw-bold text-secondary">
+                        Target: ₱@ViewBag.SalesTarget.ToString("N0")
+                    </div>
+                </div>
+                <div class="gauge-container shadow-inner">
+                    <div class="gauge-bar bg-primary" style="width: @(Math.Min(100, (decimal)ViewBag.SalesTargetProgress))%"></div>
+                </div>
+                <div class="small text-muted mt-3 fw-medium">Current Revenue: ₱@ViewBag.RevenueThisMonth.ToString("N0")</div>
+            </div>
+        </div>
+
+        <div class="col-xl-4 animate__animated animate__fadeInUp" style="animation-delay: 0.3s;">
+            <div class="report-card-premium p-4 h-100">
+                <div class="fin-label mb-3">Asset Operational Margin</div>
+                <div class="d-flex align-items-end gap-3 mb-1">
+                    <div class="fin-value text-primary">@Math.Round((decimal)ViewBag.OperationalMargin, 1)%</div>
+                    <div class="badge rounded-pill bg-primary bg-opacity-10 text-primary mb-2 p-2 px-3 fw-bold">
+                        EFM Score
+                    </div>
+                </div>
+                <div class="small text-muted fw-medium">Profitability ratio against gross operational inflow</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- P&L Table Section -->
+    <div class="row mb-5 animate__animated animate__fadeIn">
+        <div class="col-12">
+            <div class="report-card-premium p-5 overflow-hidden">
+                <div class="d-flex justify-content-between align-items-center mb-5">
+                    <h3 class="fw-bold text-dark mb-0">Operational P&L Matrix</h3>
+                    <span class="badge bg-light text-dark p-2 px-3 rounded-pill fw-bold border">FISCAL YEAR @DateTime.Now.Year</span>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table-luxury">
+                        <thead>
+                            <tr class="fin-label text-secondary">
+                                <th class="ps-4">Cost Center Component</th>
+                                <th class="text-end">Allocation Amount</th>
+                                <th class="text-end pe-4">Revenue Weighted</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <div class="fw-bold text-dark h5 mb-1">Total Inflow Revenue</div>
+                                    <div class="small text-muted">Aggregated multi-channel sales performance</div>
+                                </td>
+                                <td class="text-end fw-bold h5 text-success">₱@ViewBag.RevenueThisMonth.ToString("N2")</td>
+                                <td class="text-end pe-4 text-muted fw-bold">100%</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="fw-bold text-dark h5 mb-1">Procurement OpEx</div>
+                                    <div class="small text-muted">Supply chain asset acquisition & refills</div>
+                                </td>
+                                <td class="text-end fw-bold h5 text-danger">(₱@ViewBag.PurchaseCosts.ToString("N2"))</td>
+                                <td class="text-end pe-4 text-muted fw-bold">@Math.Round(ViewBag.RevenueThisMonth > 0 ? (ViewBag.PurchaseCosts / ViewBag.RevenueThisMonth * 100) : 0, 1)%</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="fw-bold text-dark h5 mb-1">Human Capital Expense</div>
+                                    <div class="small text-muted">Executive & Production payroll allocation</div>
+                                </td>
+                                <td class="text-end fw-bold h5 text-danger">(₱@ViewBag.PayrollCosts.ToString("N2"))</td>
+                                <td class="text-end pe-4 text-muted fw-bold">@Math.Round(ViewBag.RevenueThisMonth > 0 ? (ViewBag.PayrollCosts / ViewBag.RevenueThisMonth * 100) : 0, 1)%</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="fw-bold text-dark h5 mb-1">Utility & Infrastructure</div>
+                                    <div class="small text-muted">Estimated facility operational overhead</div>
+                                </td>
+                                <td class="text-end fw-bold h5 text-danger">(₱@ViewBag.UtilityCosts.ToString("N2"))</td>
+                                <td class="text-end pe-4 text-muted fw-bold">@Math.Round(ViewBag.RevenueThisMonth > 0 ? (ViewBag.UtilityCosts / ViewBag.RevenueThisMonth * 100) : 0, 1)%</td>
+                            </tr>
+                            <tr style="background: #f8fafc;">
+                                <td><div class="h4 fw-bold text-dark mb-0">Net Structural Margin</div></td>
+                                <td class="text-end"><div class="h4 fw-bold @(ViewBag.NetProfit >= 0 ? "text-success" : "text-danger") mb-0">₱@ViewBag.NetProfit.ToString("N2")</div></td>
+                                <td class="text-end pe-4"><div class="h4 fw-bold text-dark mb-0">@Math.Round((decimal)ViewBag.OperationalMargin, 1)%</div></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Executive Insight Matrix -->
+    <div class="insight-vibe animate__animated animate__fadeInUp">
+        <div class="row align-items-center">
+            <div class="col-lg-1 col-md-2 text-center mb-4 mb-md-0">
+                <div class="bg-white bg-opacity-20 p-3 rounded-circle d-inline-block shadow-sm">
+                    <i class="fas fa-brain fa-2x text-white"></i>
+                </div>
+            </div>
+            <div class="col-lg-11 col-md-10">
+                <h4 class="fw-bold text-white mb-3">AI Contextual Recommendation</h4>
+                <div class="lead text-white text-opacity-90 fw-medium">
+                    @if (ViewBag.WastePercentage > 5) {
+                        <span><strong>ALERT:</strong> Excessive manufacturing wastage detected (@Math.Round(ViewBag.WastePercentage, 1)%). <strong>IMPACT:</strong> Margin degradation of @Math.Round(ViewBag.WastePercentage * 0.5m, 1)% estimated. <strong>STRATEGY:</strong> Review equipment calibration and implement "Lean Start" protocols.</span>
+                    } else if (ViewBag.OperationalMargin < 15) {
+                        <span><strong>ADVISORY:</strong> Tight operational margin identified. <strong>IMPACT:</strong> Capital liquidity risk. <strong>STRATEGY:</strong> Consolidate procurement batches to leverage volume discounts and audit overtime expenditures.</span>
+                    } else {
+                        <span><strong>OPTIMAL:</strong> High fiscal health detected. <strong>IMPACT:</strong> Strong capital position. <strong>STRATEGY:</strong> Consider infrastructure scaling or performance-based bonuses to maintain workforce momentum.</span>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

@@ -1,0 +1,271 @@
+@model CrustFlowERP.Models.EditUserViewModel
+@{
+    ViewData["Title"] = "Edit User";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="page-title-box d-flex justify-content-between align-items-center">
+                <div>
+                    <h3>Edit User</h3>
+                    <p>Modify user information and role assignments.</p>
+                </div>
+                <div>
+                    <a href="@Url.Action("Users", "SuperAdmin")" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Users
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-bottom-0 py-3">
+                    <h5 class="card-title mb-0 fw-bold">User Information</h5>
+                </div>
+                <div class="card-body">
+                    <form id="editUserForm">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" id="userId" value="@Model.Id" />
+                        
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="userName" class="form-label fw-bold">Username</label>
+                                    <input type="text" class="form-control" id="userName" value="@Model.UserName" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="email" class="form-label fw-bold">Email Address</label>
+                                    <input type="email" class="form-control" id="email" value="@Model.Email" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="role" class="form-label fw-bold">Role Assignment</label>
+                            <select class="form-select" id="role" required>
+                                <option value="">Select Role</option>
+                                @if (Model.AllRoles != null)
+                                {
+                                    @foreach (var role in Model.AllRoles)
+                                    {
+                                        <option value="@role.Value">@(role.Selected ? "selected" : "")@role.Text</option>
+                                    }
+                                }
+                            </select>
+                            <div class="form-text">Note: SuperAdmin users cannot be edited by other users.</div>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Account Status</label>
+                                    <div class="form-control-plaintext">
+                                        @if (Model.IsLockedOut)
+                                        {
+                                            <span class="badge bg-warning text-dark">
+                                                <i class="fas fa-lock me-1"></i>Locked
+                                            </span>
+                                            if (Model.LockoutEnd.HasValue)
+                                            {
+                                                <small class="d-block text-muted">Until @Model.LockoutEnd.Value.ToString("g")</small>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-success text-white">
+                                                <i class="fas fa-check me-1"></i>Active
+                                            </span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <button type="submit" class="btn btn-admin-primary">
+                                <i class="fas fa-save me-2"></i>Save Changes
+                            </button>
+                            <a href="@Url.Action("Users", "SuperAdmin")" class="btn btn-secondary">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-bottom-0 py-3">
+                    <h5 class="card-title mb-0 fw-bold">Role Permissions</h5>
+                </div>
+                <div class="card-body">
+                    <div id="rolePermissions">
+                        <div class="alert alert-info border-0 bg-soft-info" role="alert">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Select a role to view associated permissions.
+                        </div>
+                        
+                        <div id="adminPermissions" style="display: none;">
+                            <h6 class="fw-bold mb-3 text-primary">Admin Permissions</h6>
+                            <div class="list-group list-group-flush">
+                                <div class="list-group-item px-0">
+                                    <i class="fas fa-check text-success me-2"></i>Create Users (Admin, Manager, Cashier)
+                                </div>
+                                <div class="list-group-item px-0">
+                                    <i class="fas fa-check text-success me-2"></i>Edit Users (Admin, Manager, Cashier)
+                                </div>
+                                <div class="list-group-item px-0">
+                                    <i class="fas fa-check text-success me-2"></i>Delete Users (Admin, Manager, Cashier)
+                                </div>
+                                <div class="list-group-item px-0">
+                                    <i class="fas fa-check text-success me-2"></i>View Reports
+                                </div>
+                                <div class="list-group-item px-0">
+                                    <i class="fas fa-check text-success me-2"></i>Manage Inventory
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="managerPermissions" style="display: none;">
+                            <h6 class="fw-bold mb-3 text-success">Manager Permissions</h6>
+                            <div class="list-group list-group-flush">
+                                <div class="list-group-item px-0">
+                                    <i class="fas fa-check text-success me-2"></i>View Reports
+                                </div>
+                                <div class="list-group-item px-0">
+                                    <i class="fas fa-check text-success me-2"></i>Manage Inventory
+                                </div>
+                                <div class="list-group-item px-0">
+                                    <i class="fas fa-check text-success me-2"></i>Supervise Staff
+                                </div>
+                                <div class="list-group-item px-0">
+                                    <i class="fas fa-check text-success me-2"></i>Approve Transactions
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="cashierPermissions" style="display: none;">
+                            <h6 class="fw-bold mb-3 text-warning">Cashier Permissions</h6>
+                            <div class="list-group list-group-flush">
+                                <div class="list-group-item px-0">
+                                    <i class="fas fa-check text-success me-2"></i>Process Sales
+                                </div>
+                                <div class="list-group-item px-0">
+                                    <i class="fas fa-check text-success me-2"></i>View Inventory
+                                </div>
+                                <div class="list-group-item px-0">
+                                    <i class="fas fa-check text-success me-2"></i>View Dashboard
+                                </div>
+                                <div class="list-group-item px-0">
+                                    <i class="fas fa-check text-success me-2"></i>Generate Receipts
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('editUserForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const userId = document.getElementById('userId').value;
+    const userName = document.getElementById('userName').value;
+    const email = document.getElementById('email').value;
+    const role = document.getElementById('role').value;
+    
+    if (!userName.trim() || !email.trim() || !role) {
+        showToast('Please fill in all required fields', 'error');
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('Id', userId);
+    formData.append('UserName', userName);
+    formData.append('Email', email);
+    formData.append('Role', role);
+    formData.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]').value);
+    
+    try {
+        const response = await fetch('/SuperAdmin/EditUser', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showToast(result.message, 'success');
+            setTimeout(() => {
+                window.location.href = '/SuperAdmin/Users';
+            }, 2000);
+        } else {
+            showToast(result.message, 'error');
+        }
+    } catch (error) {
+        showToast('An error occurred while updating user', 'error');
+    }
+});
+
+// Show role permissions based on selection
+document.getElementById('role').addEventListener('change', function() {
+    const selectedRole = this.value;
+    
+    // Hide all permission sections
+    document.getElementById('adminPermissions').style.display = 'none';
+    document.getElementById('managerPermissions').style.display = 'none';
+    document.getElementById('cashierPermissions').style.display = 'none';
+    
+    // Show relevant permissions
+    if (selectedRole === '1') {
+        document.getElementById('adminPermissions').style.display = 'block';
+    } else if (selectedRole === '2') {
+        document.getElementById('managerPermissions').style.display = 'block';
+    } else if (selectedRole === '3') {
+        document.getElementById('cashierPermissions').style.display = 'block';
+    }
+});
+
+// Show initial permissions based on current role
+document.addEventListener('DOMContentLoaded', function() {
+    const currentRole = '@Model.Role';
+    if (currentRole === '1') {
+        document.getElementById('adminPermissions').style.display = 'block';
+    } else if (currentRole === '2') {
+        document.getElementById('managerPermissions').style.display = 'block';
+    } else if (currentRole === '3') {
+        document.getElementById('cashierPermissions').style.display = 'block';
+    }
+});
+
+function showToast(message, type) {
+    // Create toast notification
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${type === 'success' ? 'success' : 'danger'} position-fixed top-0 end-0 m-3`;
+    toast.style.zIndex = '9999';
+    toast.innerHTML = `
+        <div class="d-flex align-items-center">
+            <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} me-2"></i>
+            ${message}
+        </div>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 5000);
+}
+</script>

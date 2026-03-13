@@ -1,0 +1,389 @@
+@model CrustFlowERP.Models.DashboardViewModel
+@{
+    ViewData["Title"] = "Super Admin Dashboard";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<style>
+    /* Responsive dashboard styles */
+    .stats-card {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 5px 15px rgba(139, 90, 43, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin-bottom: 20px;
+    }
+    
+    .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(139, 90, 43, 0.15);
+    }
+    
+    @@media (max-width: 768px) {
+        .stats-card {
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+    }
+    
+    @@media (max-width: 576px) {
+        .stats-card {
+            padding: 12px;
+            margin-bottom: 12px;
+            border-radius: 10px;
+        }
+    }
+    
+    .stats-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+    
+    @@media (max-width: 768px) {
+        .stats-icon {
+            width: 50px;
+            height: 50px;
+            font-size: 1.2rem;
+        }
+    }
+    
+    @@media (max-width: 576px) {
+        .stats-icon {
+            width: 40px;
+            height: 40px;
+            font-size: 1rem;
+        }
+    }
+    
+    .stats-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #8b5a2b;
+        margin-bottom: 5px;
+    }
+    
+    @@media (max-width: 768px) {
+        .stats-value {
+            font-size: 1.5rem;
+        }
+    }
+    
+    @@media (max-width: 576px) {
+        .stats-value {
+            font-size: 1.2rem;
+        }
+    }
+    
+    .stats-label {
+        font-size: 0.9rem;
+        color: #6c757d;
+        margin: 0;
+    }
+    
+    @@media (max-width: 576px) {
+        .stats-label {
+            font-size: 0.8rem;
+        }
+    }
+    
+    .page-title-box h3 {
+        font-size: 1.8rem;
+        color: #8b5a2b;
+        margin-bottom: 10px;
+    }
+    
+    @@media (max-width: 768px) {
+        .page-title-box h3 {
+            font-size: 1.5rem;
+        }
+    }
+    
+    @@media (max-width: 576px) {
+        .page-title-box h3 {
+            font-size: 1.3rem;
+        }
+    }
+    
+    .page-title-box p {
+        color: #6c757d;
+        font-size: 1rem;
+    }
+    
+    @@media (max-width: 576px) {
+        .page-title-box p {
+            font-size: 0.9rem;
+        }
+    }
+    
+    .table-responsive {
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    
+    @@media (max-width: 768px) {
+        .table-responsive {
+            font-size: 0.9rem;
+        }
+    }
+    
+    @@media (max-width: 576px) {
+        .table-responsive {
+            font-size: 0.8rem;
+        }
+        
+        .table th, .table td {
+            padding: 8px 5px;
+        }
+    }
+    
+    .card {
+        border-radius: 15px;
+        border: none;
+        box-shadow: 0 5px 15px rgba(139, 90, 43, 0.1);
+    }
+    
+    @@media (max-width: 576px) {
+        .card {
+            border-radius: 10px;
+        }
+    }
+    
+    .badge {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+    }
+    
+    @@media (max-width: 576px) {
+        .badge {
+            font-size: 0.7rem;
+            padding: 0.2rem 0.4rem;
+        }
+    }
+    .badge-soft-success { background-color: #d1e7dd; color: #0f5132; }
+    .badge-soft-warning { background-color: #fff3cd; color: #664d03; }
+    .badge-soft-info { background-color: #cff4fc; color: #055160; }
+    .badge-soft-danger { background-color: #f8d7da; color: #842029; }
+</style>
+
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="page-title-box text-center text-md-start">
+                <h3>Dashboard</h3>
+                <p>Welcome to the CrustFlowERP Super Admin control center.</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Stats Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-6 col-md-6 col-lg-3">
+            <div class="stats-card text-center">
+                <div class="stats-icon bg-light text-primary mx-auto mb-3">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h4 class="stats-value">@Model.TotalUsers</h4>
+                <p class="stats-label">Total Users</p>
+            </div>
+        </div>
+        <div class="col-6 col-md-6 col-lg-3">
+            <div class="stats-card text-center">
+                <div class="stats-icon bg-light text-success mx-auto mb-3">
+                    <i class="fas fa-user-shield"></i>
+                </div>
+                <h4 class="stats-value">@Model.TotalRoles</h4>
+                <p class="stats-label">Active Roles</p>
+            </div>
+        </div>
+        <div class="col-6 col-md-6 col-lg-3">
+            <div class="stats-card text-center">
+                <div class="stats-icon bg-light text-info mx-auto mb-3">
+                    <i class="fas fa-server"></i>
+                </div>
+                <h4 class="stats-value">99.9%</h4>
+                <p class="stats-label">System Uptime</p>
+            </div>
+        </div>
+        <div class="col-6 col-md-6 col-lg-3">
+            <div class="stats-card text-center">
+                <div class="stats-icon bg-light text-warning mx-auto mb-3">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <h4 class="stats-value">@Model.LockedUsers</h4>
+                <p class="stats-label">Locked Users</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Management -->
+    <div class="row g-4 mb-5">
+        <div class="col-12">
+            <h5 class="fw-bold mb-3 text-brown"><i class="fas fa-rocket me-2"></i> Quick Management</h5>
+            <div class="row g-3">
+                <div class="col-6 col-md-3">
+                    <a asp-action="Subscriptions" class="btn btn-primary w-100 py-4 shadow-sm border-0 d-flex flex-column align-items-center justify-content-center h-100">
+                        <i class="fas fa-money-bill-wave fa-2x mb-2"></i>
+                        <span class="fw-bold">Subscriptions</span>
+                    </a>
+                </div>
+                <div class="col-6 col-md-3">
+                    <a asp-action="Users" class="btn btn-info text-white w-100 py-4 shadow-sm border-0 d-flex flex-column align-items-center justify-content-center h-100">
+                        <i class="fas fa-user-plus fa-2x mb-2"></i>
+                        <span class="fw-bold">User Management</span>
+                    </a>
+                </div>
+                <div class="col-6 col-md-3">
+                    <a asp-action="Roles" class="btn btn-warning text-white w-100 py-4 shadow-sm border-0 d-flex flex-column align-items-center justify-content-center h-100">
+                        <i class="fas fa-shield-alt fa-2x mb-2"></i>
+                        <span class="fw-bold">Roles & Permissions</span>
+                    </a>
+                </div>
+                <div class="col-6 col-md-3">
+                    <a asp-action="Logs" class="btn btn-secondary w-100 py-4 shadow-sm border-0 d-flex flex-column align-items-center justify-content-center h-100">
+                        <i class="fas fa-file-contract fa-2x mb-2"></i>
+                        <span class="fw-bold">Audit Logs</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-5">
+        <!-- Recent Activity -->
+        <div class="col-lg-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-bottom-0 py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0 fw-bold">Recent System Activity</h5>
+                    @if (ViewBag.LogError != null)
+                    {
+                        <div class="alert alert-danger small py-1 px-2 mb-0">
+                            <i class="fas fa-exclamation-circle me-1"></i> Data Error: @ViewBag.LogError
+                        </div>
+                    }
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-4">User</th>
+                                    <th>Action</th>
+                                    <th>Time</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.RecentActivities != null && Model.RecentActivities.Any())
+                                {
+                                    foreach (var activity in Model.RecentActivities)
+                                    {
+                                        <tr>
+                                            <td class="ps-4">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="profile-avatar sm me-3" style="width:32px;height:32px;font-size:0.8rem; background: #8b5a2b; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                                        @(activity.User?.Length >= 2 ? activity.User.Substring(0, 2).ToUpper() : "SY")
+                                                    </div> 
+                                                    <div class="fw-semibold">@activity.User</div>
+                                                </div>
+                                            </td>
+                                            <td>@activity.Action</td>
+                                            <td>@activity.Timestamp.ToString("MMM dd, HH:mm")</td>
+                                            <td><span class="badge @activity.BadgeClass px-3 py-2">@activity.Status</span></td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="4" class="text-center py-5 text-muted">
+                                            <i class="fas fa-inbox fa-3x mb-3 opacity-25"></i>
+                                            <p>No recent ERP transactions found.</p>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-footer bg-white border-top-0 text-center py-3">
+                    <a asp-action="Logs" class="text-decoration-none">View All Activity <i class="fas fa-arrow-right ms-1"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Database Management -->
+    <div class="row g-4 mb-5 pb-5">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white border-bottom-0 py-3">
+                    <h5 class="card-title mb-1 fw-bold text-danger"><i class="fas fa-user-lock me-2"></i> User Reset</h5>
+                    <p class="text-muted small mb-0">Reset User Identity system.</p>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small mb-4">Warning: This will PERMANENTLY delete all current users and reset the database with default accounts. Use only for development.</p>
+                    <button type="button" class="btn btn-outline-danger w-100 py-2 fw-bold" onclick="confirmResetUsers()">
+                        <i class="fas fa-trash-alt me-2"></i> Reset Users Database
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white border-bottom-0 py-3">
+                    <h5 class="card-title mb-1 fw-bold text-primary"><i class="fas fa-vial me-2"></i> ERP Data Seeding</h5>
+                    <p class="text-muted small mb-0">Populate system with sample data.</p>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small mb-4">Populates Inventory, Ingredients, and Sales data. This will clear existing records first for a clean demo state.</p>
+                    <button type="button" class="btn btn-outline-primary w-100 py-2 fw-bold" id="seedDataBtn" onclick="confirmResetData()">
+                        <i class="fas fa-database me-2"></i> Seed Sample ERP Data
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmResetUsers() {
+    if (confirm("Are you absolutely sure? This will delete all users and you will be logged out!")) {
+        fetch('/SuperAdmin/ResetAndSeedUsers', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message + " You will now be redirected to the login page.");
+                window.location.href = '/Account/Login';
+            } else { alert("Error: " + data.message); }
+        });
+    }
+}
+
+function confirmResetData() {
+    const btn = document.getElementById('seedDataBtn');
+    if (confirm("This will clear all current Inventory, Sales, and Ingredient data and replace them with the new expanded dataset. Continue?")) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Seeding Data...';
+        
+        fetch('/SuperAdmin/ResetAndSeedData', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message);
+            location.reload();
+        })
+        .catch(error => {
+            alert("Unexpected error: " + error);
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-database me-2"></i> Seed Sample ERP Data';
+        });
+    }
+}
+</script>

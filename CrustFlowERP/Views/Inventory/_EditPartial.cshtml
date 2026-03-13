@@ -1,0 +1,94 @@
+@model CrustFlowERP.Models.Production.Inventory
+
+<div class="modal-header border-0 pb-0">
+    <h5 class="modal-title fw-bold">
+        <i class="fas fa-edit text-primary me-2"></i> Edit Inventory Record
+    </h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+
+<form asp-action="Edit" method="post">
+    <div class="modal-body pt-4">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <input type="hidden" asp-for="Id" />
+        <input type="hidden" asp-for="ReceivedDate" />
+        
+        <div class="row g-3">
+            <div class="col-12">
+                <label class="form-label fw-bold">Item</label>
+                <select asp-for="IngredientId" id="EditIngredientSelect" class="form-select border-0 bg-light" asp-items="ViewBag.IngredientId" style="border-radius: 10px; height: 45px;">
+                </select>
+                <span asp-validation-for="IngredientId" class="text-danger small"></span>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label fw-bold">Supplier</label>
+                <select asp-for="Supplier" id="EditSupplierSelect" class="form-select border-0 bg-light" asp-items="ViewBag.SupplierId" style="border-radius: 10px; height: 45px;">
+                    <option value="">-- Select Supplier --</option>
+                </select>
+                <span asp-validation-for="Supplier" class="text-danger small"></span>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label fw-bold">Batch Number</label>
+                <input asp-for="BatchNumber" class="form-control border-0 bg-light" style="border-radius: 10px; height: 45px;" readonly>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label fw-bold">Current Stock Level</label>
+                <div class="input-group">
+                    <input asp-for="RemainingQuantity" type="number" step="0.0001" class="form-control border-0 bg-light" style="border-top-left-radius: 10px; border-bottom-left-radius: 10px; height: 45px;">
+                    <span class="input-group-text bg-light border-0" style="border-top-right-radius: 10px; border-bottom-right-radius: 10px;">@Model.Ingredient?.Unit</span>
+                </div>
+                <span asp-validation-for="RemainingQuantity" class="text-danger small"></span>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label fw-bold">Expiration Date</label>
+                <input asp-for="ExpirationDate" type="date" class="form-control border-0 bg-light" style="border-radius: 10px; height: 45px;">
+                <span asp-validation-for="ExpirationDate" class="text-danger small"></span>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label fw-bold">Inventory Category</label>
+                <select asp-for="Category" class="form-select border-0 bg-light" asp-items="Html.GetEnumSelectList<CrustFlowERP.Models.InventoryCategory>()" style="border-radius: 10px; height: 45px;">
+                </select>
+                <span asp-validation-for="Category" class="text-danger small"></span>
+            </div>
+            
+            <input type="hidden" asp-for="BatchQuantity" />
+        </div>
+    </div>
+    <div class="modal-footer border-0">
+        <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+        <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm">
+            Save Changes <i class="fas fa-check ms-2"></i>
+        </button>
+    </div>
+</form>
+
+<script>
+    (function() {
+        const supplierSelect = document.getElementById('EditSupplierSelect');
+        const ingredientSelect = document.getElementById('EditIngredientSelect');
+
+        if (supplierSelect) {
+            supplierSelect.addEventListener('change', function() {
+                const supplierId = this.value;
+                if (!supplierId) return;
+
+                fetch(`/Inventory/GetIngredientsBySupplier?supplierId=${supplierId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        ingredientSelect.innerHTML = '<option value="">-- Choose Item --</option>';
+                        data.forEach(item => {
+                            const option = document.createElement('option');
+                            option.value = item.id;
+                            option.textContent = item.name;
+                            ingredientSelect.appendChild(option);
+                        });
+                    });
+            });
+        }
+    })();
+</script>

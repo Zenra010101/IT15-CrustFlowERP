@@ -1,0 +1,302 @@
+@model IEnumerable<CrustFlowERP.Models.HR.Employee>
+@{
+    ViewData["Title"] = "Talent Pool - CrustFlowERP";
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
+<style>
+    .employee-card {
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        border-radius: 24px;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        overflow: hidden;
+    }
+    .employee-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        border-color: #6366f1;
+    }
+    
+    .avatar-wrapper {
+        position: relative;
+        width: 100px;
+        height: 100px;
+        margin: 0 auto;
+    }
+    .avatar-main {
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+        border-radius: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2rem;
+        font-weight: 800;
+        box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+    }
+    .status-indicator {
+        position: absolute;
+        bottom: 5px;
+        right: 5px;
+        width: 18px;
+        height: 18px;
+        background: #22c55e;
+        border: 3px solid white;
+        border-radius: 50%;
+    }
+    
+    .dept-badge {
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        padding: 5px 15px;
+        border-radius: 50px;
+        background: rgba(99, 102, 241, 0.1);
+        color: #6366f1;
+    }
+    
+    .usage-progress {
+        height: 10px;
+        border-radius: 20px;
+        background: #e2e8f0;
+        overflow: hidden;
+        width: 200px;
+    }
+    .usage-bar {
+        height: 100%;
+        border-radius: 20px;
+        transition: width 1s ease;
+    }
+</style>
+
+<div class="container-fluid py-4 px-lg-4">
+    <!-- Premium Header -->
+    <div class="row align-items-center mb-5 animate__animated animate__fadeIn">
+        <div class="col-lg-6">
+            <h2 class="fw-bold text-dark mb-1">Workforce Intelligence</h2>
+            <p class="text-muted mb-0">Navigate and manage your high-performance team members.</p>
+        </div>
+        <div class="col-lg-6 mt-4 mt-lg-0">
+            <div class="d-flex flex-wrap justify-content-lg-end align-items-center gap-4">
+                <div class="d-none d-md-block">
+                    @{
+                        var count = Model.Count();
+                        var limit = ViewBag.UserLimit ?? 15;
+                        var percent = (count * 100) / limit;
+                        var colorClass = percent > 90 ? "bg-danger" : percent > 75 ? "bg-warning" : "bg-primary";
+                    }
+                    <div class="d-flex justify-content-between mb-2 small fw-bold">
+                        <span class="text-muted">@ViewBag.CompanyTier Allocation</span>
+                        <span class="text-dark">@count / @limit</span>
+                    </div>
+                    <div class="usage-progress shadow-sm">
+                        <div class="usage-bar @colorClass" style="width: @percent%"></div>
+                    </div>
+                </div>
+                @if (Context.Session.GetInt32("UserRole") != 11)
+                {
+                    <button class="btn btn-dark rounded-pill px-4 py-2 shadow-lg fw-bold" data-bs-toggle="modal" data-bs-target="#createEmployeeModal">
+                        <i class="fas fa-user-plus me-2"></i> Acquire Talent
+                    </button>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Search & Filters -->
+    <div class="row mb-5 animate__animated animate__fadeIn" style="animation-delay: 0.1s;">
+        <div class="col-md-5">
+            <div class="input-group input-group-lg shadow-sm rounded-pill overflow-hidden border">
+                <span class="input-group-text bg-white border-0 ps-4"><i class="fas fa-search text-muted"></i></span>
+                <input type="text" class="form-control border-0 ps-2" placeholder="Search team members..." id="employeeSearch">
+            </div>
+        </div>
+    </div>
+
+    <!-- Employee Grid -->
+    <div class="row g-4" id="employeeGrid">
+        @foreach (var emp in Model)
+        {
+            <div class="col-xl-3 col-lg-4 col-md-6 employee-item animate__animated animate__zoomIn" style="animation-delay: @(Model.ToList().IndexOf(emp) * 0.05)s">
+                <div class="card employee-card h-100 p-4 text-center border-0 shadow-sm">
+                    <div class="avatar-wrapper mb-4">
+                        <div class="avatar-main">
+                            @emp.FirstName[0]@emp.LastName[0]
+                        </div>
+                        <div class="status-indicator shadow-sm"></div>
+                    </div>
+                    
+                    <h5 class="fw-bold mb-1 text-dark">@emp.FullName</h5>
+                    <p class="text-muted small mb-3 fw-medium">@emp.Position</p>
+                    
+                    <div class="mb-4">
+                        <span class="dept-badge">@emp.Department</span>
+                    </div>
+                    
+                    <div class="d-flex justify-content-center gap-3 mb-4">
+                        <div class="text-center">
+                            <div class="small text-muted fw-bold text-uppercase" style="font-size: 0.65rem;">ID Code</div>
+                            <div class="fw-bold text-primary">#@emp.EmployeeCode</div>
+                        </div>
+                    </div>
+
+                    <div class="mt-auto">
+                        <button class="btn btn-outline-primary btn-sm rounded-pill w-100 py-2 border-2 fw-bold" onclick="viewDetails(@emp.Id)">
+                            Full Disclosure <i class="fas fa-chevron-right ms-2 small"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Modal for creating new employee -->
+<div class="modal fade" id="createEmployeeModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-2xl rounded-4 overflow-hidden">
+            <div class="modal-header bg-dark text-white p-4">
+                <h5 class="modal-title fw-bold">Team Member Acquisition</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="createEmployeeForm">
+                <div class="modal-body p-5">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-uppercase text-muted">First Designation</label>
+                            <input type="text" class="form-control rounded-3 p-3 bg-light border-0" name="FirstName" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-uppercase text-muted">Last Designation</label>
+                            <input type="text" class="form-control rounded-3 p-3 bg-light border-0" name="LastName" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-uppercase text-muted">Asset ID Code</label>
+                            <input type="text" class="form-control rounded-3 p-3 bg-light border-0" name="EmployeeCode" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-uppercase text-muted">Email Protocol</label>
+                            <input type="email" class="form-control rounded-3 p-3 bg-light border-0" name="Email" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-uppercase text-muted">Department Cluster</label>
+                            <select class="form-select rounded-3 p-3 bg-light border-0" name="Department" id="departmentSelect" required>
+                                <option value="">Assign Cluster</option>
+                                <option value="Production">Production & Mfg</option>
+                                <option value="Inventory">Inventory & Supply Chain</option>
+                                <option value="Sales">Revenue & Growth</option>
+                                <option value="Finance">Capital Management</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-uppercase text-muted">Specific Role</label>
+                            <select class="form-select rounded-3 p-3 bg-light border-0" name="Position" id="positionSelect" required disabled>
+                                <option value="">Select Cluster First</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light p-4">
+                    <button type="button" class="btn btn-link text-muted fw-bold text-decoration-none px-4" data-bs-dismiss="modal">Discard</button>
+                    <button type="submit" class="btn btn-dark px-5 py-3 rounded-pill fw-bold shadow-lg">Onboard Talent</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for viewing employee profile -->
+<div class="modal fade" id="profileModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4" id="profileModalContent">
+            <!-- Content loaded via Ajax -->
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Search functionality
+        document.getElementById('employeeSearch').addEventListener('input', function(e) {
+            const term = e.target.value.toLowerCase();
+            const items = document.querySelectorAll('.employee-item');
+            items.forEach(item => {
+                const text = item.innerText.toLowerCase();
+                item.style.display = text.includes(term) ? '' : 'none';
+            });
+        });
+
+        const positionsByDept = {
+            'Production': [
+                { value: 'Production Manager', text: 'Production Lead' },
+                { value: 'Production Staff', text: 'Operations Specialist' },
+                { value: 'Quality Control Staff', text: 'Quality Assurance' }
+            ],
+            'Inventory': [
+                { value: 'Warehouse Staff', text: 'Logistics Analyst' },
+                { value: 'Purchasing Officer', text: 'Procurement Strategy' }
+            ],
+            'Sales': [
+                { value: 'Cashier', text: 'Transaction Lead' },
+                { value: 'Sales Manager', text: 'Growth Manager' }
+            ],
+            'Finance': [
+                { value: 'Accountant', text: 'Fiscal Analyst' },
+                { value: 'Manager', text: 'Executive Lead' }
+            ]
+        };
+
+        document.getElementById('departmentSelect').addEventListener('change', function() {
+            const dept = this.value;
+            const posSelect = document.getElementById('positionSelect');
+            posSelect.innerHTML = '<option value="">Select Role</option>';
+            if (dept && positionsByDept[dept]) {
+                positionsByDept[dept].forEach(pos => {
+                    const opt = document.createElement('option');
+                    opt.value = pos.value;
+                    opt.textContent = pos.text;
+                    posSelect.appendChild(opt);
+                });
+                posSelect.disabled = false;
+                posSelect.classList.remove('bg-light');
+                posSelect.classList.add('bg-white');
+            } else {
+                posSelect.disabled = true;
+                posSelect.innerHTML = '<option value="">Select Cluster First</option>';
+            }
+        });
+
+        document.getElementById('createEmployeeForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData.entries());
+            fetch('/HR/CreateEmployee', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) location.reload();
+                else alert(data.message);
+            });
+        });
+
+        function viewDetails(id) {
+            const modal = new bootstrap.Modal(document.getElementById('profileModal'));
+            const content = document.getElementById('profileModalContent');
+            content.innerHTML = `<div class="modal-body text-center py-5"><div class="spinner-border text-primary" role="status"></div></div>`;
+            modal.show();
+            fetch(`/HR/GetEmployeeProfile/${id}`)
+                .then(response => response.text())
+                .then(html => content.innerHTML = html);
+        }
+    </script>
+}
+

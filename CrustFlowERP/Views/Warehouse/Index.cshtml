@@ -1,0 +1,30 @@
+@{
+    ViewData["Title"] = "Warehouse Dashboard";
+    Layout = "~/Views/Shared/_AdminSidebarLayout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="page-title-box">
+                <h3 class="fw-bold text-dark">Warehouse & Stock Dashboard</h3>
+                <p class="text-muted">Track raw materials, finished goods, and stock movements.</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row g-4">
+        <div class="col-lg-12">
+            <div class="card border-0 shadow-sm rounded-4 p-5 text-center bg-white">
+                <div class="py-5">
+                    <i class="fas fa-warehouse fa-4x text-success opacity-25 mb-4"></i>
+                    <h2 class="text-dark fw-bold">Inventory Control</h2>
+                    <p class="text-muted mx-auto" style="max-width: 500px;">
+                        Manage incoming ingredients and track expiration dates. Real-time stock levels will be available for production planning.
+                    </p>
+                        <a asp-controller="Inventory" asp-action="Index" class="btn btn-success px-4 py-2 rounded-pill fw-bold shadow-sm">Manage Inventory</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

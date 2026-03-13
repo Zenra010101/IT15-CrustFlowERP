@@ -1,0 +1,68 @@
+@{
+    ViewData["Title"] = "Payroll Processing";
+    Layout = "~/Views/Shared/_AdminSidebarLayout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12 text-center text-md-start">
+            <h2 class="display-6"><i class="fas fa-money-check-alt me-2 text-primary"></i>Payroll Center</h2>
+            <p class="text-muted">Process and analyze employee compensation, taxes, and benefits.</p>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 rounded-4 bg-white p-4 text-center">
+                <p class="text-muted small mb-1">Upcoming Payroll</p>
+                <h2 class="text-primary fw-bold mt-2">₱0.00</h2>
+                <span class="text-muted small">Next Date: --/--/----</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 rounded-4 bg-white p-4 text-center">
+                <p class="text-muted small mb-1">Total Salaries (MTD)</p>
+                <h2 class="text-primary fw-bold mt-2">₱0.00</h2>
+                <span class="text-muted small">Active Employees: 0</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 rounded-4 bg-white p-4 text-center">
+                <p class="text-muted small mb-1">Withholding Taxes</p>
+                <h2 class="text-warning fw-bold mt-2">₱0.00</h2>
+                <span class="text-muted small">Total Remittance</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 rounded-4 overflow-hidden mb-4">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold">Recent Payroll Batches</h5>
+            <button class="btn btn-primary btn-sm rounded-pill px-4">Generate New Batch</button>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">Period</th>
+                            <th>Total Gross</th>
+                            <th>Total Deductions</th>
+                            <th>Net Pay</th>
+                            <th>Status</th>
+                            <th class="pe-4 text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-muted">
+                                <i class="fas fa-money-check fa-3x mb-3 opacity-25"></i>
+                                <p>No payroll records found.</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

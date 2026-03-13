@@ -1,0 +1,100 @@
+@model CrustFlowERP.Models.CRM.Supplier
+@using CrustFlowERP.Models.Purchasing
+@{
+    ViewData["Title"] = $"{Model.Name} - Supplier Details";
+    var purchaseOrders = ViewBag.PurchaseOrders as IEnumerable<CrustFlowERP.Models.Purchasing.PurchaseOrder>;
+}
+
+<div class="container-fluid">
+    <div class="row mb-4 align-items-center">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-2">
+                    <li class="breadcrumb-item"><a asp-action="Index">Suppliers List</a></li>
+                    <li class="breadcrumb-item active">Details</li>
+                </ol>
+            </nav>
+            <h2 class="fw-bold mb-0">@Model.Name</h2>
+            <p class="text-muted">Supplier profile and purchase history.</p>
+        </div>
+        <div class="col-auto">
+            <div class="btn-group shadow-sm">
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary px-4">
+                    <i class="fas fa-edit me-2"></i> Edit Profile
+                </a>
+                <a asp-action="Index" class="btn btn-outline-secondary px-4">
+                    <i class="fas fa-arrow-left me-2"></i> Back to List
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Supplier Profile Card -->
+        <div class="col-12">
+            <div class="card border-0 shadow-sm rounded-4 bg-white">
+                <div class="card-body p-4">
+                    <div class="row">
+                        <div class="col-md-4 text-center border-end">
+                            <div class="bg-primary bg-opacity-10 p-4 rounded-circle d-inline-block mb-3">
+                                <i class="fas fa-building fa-3x text-primary opacity-75"></i>
+                            </div>
+                            <h4 class="fw-bold text-dark">@Model.Name</h4>
+                            <span class="badge bg-light text-dark border px-3 py-2 rounded-pill">@Model.Category</span>
+                            
+                            <div class="mt-4">
+                                <h6 class="fw-bold text-muted text-uppercase small mb-3">Core Offering</h6>
+                                <div class="p-3 bg-light rounded-3 d-inline-block">
+                                    <i class="fas fa-box-open text-primary me-2"></i> @Model.MainProductType
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-8 ps-md-5">
+                            <h6 class="fw-bold text-muted text-uppercase small mb-4 mt-2">Contact Details</h6>
+                            <div class="row g-4">
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-center mb-4">
+                                        <div class="bg-light p-3 rounded-3 me-3"><i class="fas fa-user text-primary"></i></div>
+                                        <div>
+                                            <small class="text-muted d-block uppercase-ts">Contact Person</small>
+                                            <span class="fw-bold text-dark fs-5">@Model.ContactName</span>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-center mb-4">
+                                        <div class="bg-light p-3 rounded-3 me-3"><i class="fas fa-phone text-primary"></i></div>
+                                        <div>
+                                            <small class="text-muted d-block uppercase-ts">Phone Number</small>
+                                            <span class="fw-bold text-dark fs-5">@Model.Phone</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-center mb-4">
+                                        <div class="bg-light p-3 rounded-3 me-3"><i class="fas fa-envelope text-primary"></i></div>
+                                        <div>
+                                            <small class="text-muted d-block uppercase-ts">Email Address</small>
+                                            <span class="fw-bold text-dark fs-5">@Model.Email</span>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-start mb-4">
+                                        <div class="bg-light p-3 rounded-3 me-3"><i class="fas fa-map-marker-alt text-primary"></i></div>
+                                        <div>
+                                            <small class="text-muted d-block uppercase-ts">Office Address</small>
+                                            <span class="fw-bold text-dark fs-5">@Model.Address</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card { border-radius: 12px; }
+    .table thead th { font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; }
+</style>

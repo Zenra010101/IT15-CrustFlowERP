@@ -1,0 +1,71 @@
+@model IEnumerable<CrustFlowERP.Models.Inventory.InventoryWastage>
+@{
+    ViewData["Title"] = "Inventory Wastage & Spoilage";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4 align-items-center">
+        <div class="col">
+            <h2 class="fw-bold mb-0">Wastage & Spoilage Logs</h2>
+            <p class="text-muted">History of all ingredients reported as wasted, damaged, or spoiled.</p>
+        </div>
+        <div class="col-auto">
+            <a asp-action="RecordWastage" class="btn btn-danger rounded-pill px-4 shadow-sm">
+                <i class="fas fa-trash-can me-2"></i> Record New Wastage
+            </a>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 bg-white overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light bg-opacity-75">
+                    <tr>
+                        <th class="ps-4">Item (Batch)</th>
+                        <th>Category</th>
+                        <th class="text-center">Quantity Lost</th>
+                        <th>Reason</th>
+                        <th>Reported At</th>
+                        <th class="pe-4">Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var wastage in Model)
+                    {
+                        <tr>
+                            <td class="ps-4">
+                                <div class="fw-bold text-dark">@(wastage.Inventory?.Ingredient?.Name ?? "Unknown")</div>
+                                <small class="text-muted">Batch: @(wastage.Inventory?.BatchNumber ?? "N/A")</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary bg-opacity-10 text-secondary border">@(wastage.Inventory?.Category.ToString() ?? "N/A")</span>
+                            </td>
+                            <td class="text-center fw-bold text-danger">
+                                -@wastage.Quantity.ToString("N2") @(wastage.Inventory?.Ingredient?.Unit ?? "")
+                            </td>
+                            <td>
+                                <span class="badge bg-danger bg-opacity-10 text-danger border">@wastage.Reason</span>
+                            </td>
+                            <td>
+                                <div class="small">@wastage.ReportedAt.ToString("MMM dd, yyyy")</div>
+                                <div class="text-muted" style="font-size: 0.75rem;">@wastage.ReportedAt.ToString("hh:mm tt")</div>
+                            </td>
+                            <td class="pe-4">
+                                <small class="text-muted">@(string.IsNullOrEmpty(wastage.Notes) ? "—" : wastage.Notes)</small>
+                            </td>
+                        </tr>
+                    }
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="6" class="py-5 text-center text-muted">
+                                <i class="fas fa-check-circle text-success opacity-25 fa-3x mb-3 d-block"></i>
+                                No wastage or spoilage records found.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

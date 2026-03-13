@@ -1,0 +1,66 @@
+@model IEnumerable<CrustFlowERP.Models.Production.Product>
+
+@{
+    ViewData["Title"] = "Product Catalog";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4 align-items-center">
+        <div class="col">
+            <h2 class="fw-bold mb-0">Product Catalog</h2>
+            <p class="text-muted">Manage your bakery's item list and pricing</p>
+        </div>
+        <div class="col-auto">
+            <a asp-action="Create" class="btn btn-primary px-4 shadow-sm fw-bold">
+                <i class="fas fa-plus me-2"></i> Add New Product
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        @foreach (var item in Model) {
+            <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+                <div class="card border-0 shadow-sm h-100 overflow-hidden product-card">
+                    <div class="bg-light text-center border-bottom position-relative" style="height: 180px; overflow: hidden;">
+                        @if (!string.IsNullOrEmpty(item.ImageUrl))
+                        {
+                            <img src="@item.ImageUrl" class="w-100 h-100 object-fit-cover" alt="@item.Name" />
+                        }
+                        else
+                        {
+                            <div class="d-flex align-items-center justify-content-center h-100 p-4">
+                                <i class="fas fa-bread-slice fa-3x text-warning opacity-50"></i>
+                            </div>
+                        }
+                        <span class="badge @(item.IsActive ? "bg-success" : "bg-danger") position-absolute top-0 end-0 m-3 shadow-sm">
+                            @(item.IsActive ? "Active" : "Inactive")
+                        </span>
+                    </div>
+                    <div class="card-body">
+                        <div class="text-uppercase text-primary small fw-bold mb-1">@item.Category</div>
+                        <h5 class="card-title fw-bold mb-1">@item.Name</h5>
+                        <div class="mb-3 small">
+                            <span class="text-muted">Stock:</span> 
+                            <span class="fw-bold @(item.StockQuantity <= item.MinStockLevel ? "text-danger" : "text-success")">
+                                @item.StockQuantity.ToString("N0")
+                            </span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="h5 mb-0 fw-bold text-dark">₱@item.Price.ToString("N2")</div>
+                            <div class="btn-group">
+                                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary border-0"><i class="fas fa-edit"></i></a>
+                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-info border-0"><i class="fas fa-info-circle"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .product-card { transition: transform 0.2s; border-radius: 12px; }
+    .product-card:hover { transform: translateY(-5px); }
+    .bg-soft-primary { background-color: rgba(13, 110, 253, 0.05); }
+</style>

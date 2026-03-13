@@ -1,0 +1,176 @@
+@{
+    ViewData["Title"] = "Cashier Dashboard";
+}
+
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="page-title-box">
+                <h3>Cashier Dashboard</h3>
+                <p>Process sales and manage daily transactions.</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Stats Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-6 col-md-6 col-lg-3">
+            <div class="stats-card">
+                <div class="d-flex align-items-center">
+                    <div class="stats-icon icon-primary me-3">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <div>
+                        <h4 class="stats-value">@ViewBag.TodayOrders</h4>
+                        <p class="stats-label">Today's Orders</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-6 col-lg-3">
+            <div class="stats-card">
+                <div class="d-flex align-items-center">
+                    <div class="stats-icon icon-success me-3">
+                        <i class="fas fa-money-bill-wave"></i>
+                    </div>
+                    <div>
+                        <h4 class="stats-value">₱@(((decimal)ViewBag.TodaySales).ToString("N2"))</h4>
+                        <p class="stats-label">Today's Sales</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-6 col-lg-3">
+            <div class="stats-card">
+                <div class="d-flex align-items-center">
+                    <div class="stats-icon icon-info me-3">
+                        <i class="fas fa-receipt"></i>
+                    </div>
+                    <div>
+                        <h4 class="stats-value">@ViewBag.PendingProduction</h4>
+                        <p class="stats-label">Active Batches</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-6 col-lg-3">
+            <div class="stats-card">
+                <div class="d-flex align-items-center">
+                    <div class="stats-icon icon-warning me-3">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div>
+                        <h4 class="stats-value">@ViewBag.AvgServiceTime</h4>
+                        <p class="stats-label">Avg. Service Time</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Quick Actions -->
+        <div class="col-lg-8">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-header bg-white border-bottom-0 py-3">
+                    <h5 class="card-title mb-0 fw-bold">Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <a href="@Url.Action("ProcessSales", "Cashier")" class="btn btn-primary w-100 h-100 py-3">
+                                <i class="fas fa-cash-register mb-2 d-xl-block d-none fa-2x"></i>
+                                <div>Process Sales</div>
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="@Url.Action("ViewStock", "Cashier")" class="btn btn-success w-100 h-100 py-3">
+                                <i class="fas fa-boxes mb-2 d-xl-block d-none fa-2x"></i>
+                                <div>Available Stock</div>
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="@Url.Action("PrintReceipts", "Cashier")" class="btn btn-info w-100 h-100 py-3">
+                                <i class="fas fa-print mb-2 d-xl-block d-none fa-2x"></i>
+                                <div>Print Receipts</div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Activity -->
+        <div class="col-lg-4">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-header bg-white border-bottom-0 py-3">
+                    <h5 class="card-title mb-0 fw-bold">Recent Activity</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">Order #1234</h6>
+                                <small class="text-muted">5 mins ago</small>
+                            </div>
+                            <span class="badge bg-success text-white">₱45.99</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">Order #1233</h6>
+                                <small class="text-muted">15 mins ago</small>
+                            </div>
+                            <span class="badge bg-success text-white">₱23.50</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">Order #1232</h6>
+                                <small class="text-muted">30 mins ago</small>
+                            </div>
+                            <span class="badge bg-success text-white">₱67.25</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Logout function
+function logoutUser() {
+    console.log('Attempting logout...');
+    
+    // Method 1: Try to submit the hidden form first
+    const logoutForm = document.getElementById('logoutForm');
+    if (logoutForm) {
+        try {
+            logoutForm.submit();
+            console.log('Logout form submitted successfully');
+            return;
+        } catch (error) {
+            console.error('Error submitting logout form:', error);
+        }
+    }
+    
+    // Method 2: Direct fetch to AccountController Logout
+    fetch('/Account/Logout', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+        }
+    })
+    .then(response => {
+        console.log('Logout response:', response);
+        // Always redirect to login page, regardless of response
+        window.location.href = '/Account/Login';
+    })
+    .catch(error => {
+        console.error('Error during logout:', error);
+        // Even if there's an error, redirect to login page
+        window.location.href = '/Account/Login';
+    });
+}
+</script>

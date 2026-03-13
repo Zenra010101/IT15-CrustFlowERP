@@ -1,0 +1,142 @@
+@model IEnumerable<CrustFlowERP.Models.RoleViewModel>
+@{
+    ViewData["Title"] = "Role Management";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="page-title-box d-flex justify-content-between align-items-center">
+                <div>
+                    <h3>Role Management</h3>
+                    <p>Manage system roles and their associated permissions.</p>
+                </div>
+                <div>
+                    <button class="btn btn-admin-primary"><i class="fas fa-plus me-2"></i> Create New Role</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-5 mb-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white border-bottom-0 py-3">
+                    <h5 class="card-title mb-0 fw-bold">System Roles</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        @foreach (var role in Model)
+                        {
+                            var badgeClass = role.Name switch
+                            {
+                                "SuperAdmin" => "bg-danger",
+                                "Admin" => "bg-primary",
+                                "ProductionManager" => "bg-info",
+                                "ProductionStaff" => "bg-secondary",
+                                "QualityControlStaff" => "bg-warning",
+                                "WarehouseStaff" => "bg-dark",
+                                "PurchasingOfficer" => "bg-purple",
+                                "Cashier" => "bg-teal",
+                                "SalesManager" => "bg-pink",
+                                "Accountant" => "bg-success",
+                                "Manager" => "bg-primary",
+                                _ => "bg-secondary"
+                            };
+
+                            <button type="button" class="list-group-item list-group-item-action p-3 role-item border-start border-4 border-transparent" 
+                                    onclick="loadRoleDetails('@role.Name', this)">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1 text-dark fw-bold">@role.Name</h6>
+                                        <small class="text-muted">Role identifier: #@role.Id.Substring(0, 8)</small>
+                                    </div>
+                                    <span class="badge @badgeClass rounded-pill">@role.UserCount Users</span>
+                                </div>
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-7 mb-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white border-bottom-0 py-3">
+                    <h5 class="card-title mb-0 fw-bold" id="roleTitle">Role Details</h5>
+                </div>
+                <div class="card-body" id="roleDetailsPanel">
+                    <div class="text-center py-5 text-muted">
+                        <i class="fas fa-shield-alt fa-3x mb-3 opacity-25"></i>
+                        <p>Select a role from the list to view its configuration and permissions.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+async function loadRoleDetails(roleName, element) {
+    // UI Feedback
+    document.querySelectorAll('.role-item').forEach(el => {
+        el.classList.remove('active', 'border-warning');
+        el.style.backgroundColor = '';
+        el.style.color = '';
+    });
+    element.classList.add('border-warning');
+    element.style.backgroundColor = '#fffbf0';
+
+    const titleEl = document.getElementById('roleTitle');
+    const panelEl = document.getElementById('roleDetailsPanel');
+    
+    titleEl.innerText = `${roleName} Configuration`;
+    panelEl.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary"></div></div>';
+
+    try {
+        const response = await fetch(`/SuperAdmin/GetRoleDetails?roleName=${roleName}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            let permissionsHtml = '';
+            data.details.permissions.forEach(cat => {
+                permissionsHtml += `
+                    <div class="col-md-6 mb-3">
+                        <div class="p-3 border rounded bg-light h-100">
+                            <h6 class="fw-bold mb-3 border-bottom pb-2 text-primary">${cat.category}</h6>
+                            ${cat.items.map(item => `
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" checked disabled>
+                                    <label class="form-check-label small">${item}</label>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+
+            panelEl.innerHTML = `
+                <div class="mb-4">
+                    <h6 class="fw-bold text-muted text-uppercase small mb-2">Description</h6>
+                    <p class="mb-0">${data.details.description}</p>
+                </div>
+                <hr class="my-4 opacity-10">
+                <h6 class="fw-bold text-muted text-uppercase small mb-3">Assigned Permissions</h6>
+                <div class="row g-3">
+                    ${permissionsHtml}
+                </div>
+            `;
+        }
+    } catch (error) {
+        panelEl.innerHTML = '<div class="alert alert-danger">Failed to load role details.</div>';
+    }
+}
+</script>
+
+<style>
+    .role-item:hover {
+        background-color: #f8f9fa !important;
+    }
+</style>

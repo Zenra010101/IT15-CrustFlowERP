@@ -1,0 +1,185 @@
+@model CrustFlowERP.Models.Inventory.InventoryWastage
+@{
+    ViewData["Title"] = "Record Wastage & Spoilage";
+    var inventories = ViewBag.Inventories as IEnumerable<CrustFlowERP.Models.Production.Inventory>;
+}
+
+<div class="container-fluid">
+    <div class="row mb-4 align-items-center">
+        <div class="col">
+            <h2 class="fw-bold mb-0 text-danger">Report Wastage & Spoilage</h2>
+            <p class="text-muted">Subtract items from stock because of damage, expiration, or spoilage. This update the remaining inventory quantity immediately.</p>
+        </div>
+        <div class="col-auto">
+            <a asp-action="Wastage" class="btn btn-outline-secondary rounded-pill px-4 shadow-sm border-0">
+                <i class="fas fa-arrow-left me-2"></i> Back to Logs
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm rounded-4 h-100 p-4 bg-white">
+                <form asp-action="RecordWastage" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-4"></div>
+
+                    <div class="mb-4">
+                        <label asp-for="InventoryId" class="form-label fw-bold text-dark">Select Stock Item (Batch)</label>
+                        <select asp-for="InventoryId" class="form-select rounded-3 p-3 bg-light border-0 shadow-none" id="inventorySelect" onchange="updateStockInfo()">
+                            <option value="">-- Select Ingredient/Batch --</option>
+                            @if (inventories != null)
+                            {
+                                foreach (var inv in inventories)
+                                {
+                                    <option value="@inv.Id" data-stock="@inv.RemainingQuantity" data-unit="@inv.Ingredient?.Unit" data-category="@inv.Category">
+                                        @inv.Ingredient?.Name (Batch: @inv.BatchNumber) @(inv.IsArchived ? "(Archived)" : "") - Exp: @inv.ExpirationDate.ToString("MMM dd, yyyy")
+                                    </option>
+                                }
+                            }
+                        </select>
+                        <span asp-validation-for="InventoryId" class="text-danger small"></span>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label asp-for="Quantity" class="form-label fw-bold text-dark">Quantity Wasted</label>
+                            <div class="input-group">
+                                <input asp-for="Quantity" class="form-control rounded-3 p-3 bg-light border-0 shadow-none" placeholder="0.00" type="number" step="0.0001" id="quantityInput" />
+                                <span class="input-group-text bg-light border-0 fw-bold border-start border-white" id="unitDisplay">—</span>
+                            </div>
+                            <span asp-validation-for="Quantity" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Reason" class="form-label fw-bold text-dark">Wastage Reason</label>
+                            <select asp-for="Reason" class="form-select rounded-3 p-3 bg-light border-0 shadow-none">
+                                <option value="Expired">Expired Stock</option>
+                                <option value="Spoiled">Spoiled / Rotten</option>
+                                <option value="Damaged">Damaged on Arrival</option>
+                                <option value="Contaminated">Contaminated / Infested</option>
+                                <option value="Process Loss">In-Storage Process Loss</option>
+                                <option value="Other">Other Reason</option>
+                            </select>
+                            <span asp-validation-for="Reason" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="Notes" class="form-label fw-bold text-dark">Additional Details (Optional)</label>
+                        <textarea asp-for="Notes" class="form-control rounded-3 p-3 bg-light border-0 shadow-none" rows="3" placeholder="Explain the situation or incident..."></textarea>
+                        <span asp-validation-for="Notes" class="text-danger small"></span>
+                    </div>
+
+                    <div class="p-3 bg-danger bg-opacity-10 rounded-3 mb-4 d-none" id="stockAlert">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-circle-exclamation text-danger me-2"></i>
+                            <span class="text-danger small">Remaining stock for this batch will be updated to <span id="newStockDisplay">0</span> <span class="unit-text"></span>.</span>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-danger w-100 rounded-pill p-3 fw-bold shadow-sm">
+                        <i class="fas fa-check-circle me-2"></i> Confirm Wastage Entry
+                    </button>
+                </form>
+            </div>
+        </div>
+        <div class="col-lg-6">
+             <div class="card border-0 shadow-sm rounded-4 h-100 p-4 bg-primary bg-opacity-10 border border-primary border-opacity-25">
+                <div class="d-flex align-items-center mb-4">
+                    <div class="bg-primary bg-opacity-10 p-3 rounded-circle me-3">
+                        <i class="fas fa-info-circle text-primary fs-4"></i>
+                    </div>
+                    <h5 class="fw-bold text-primary mb-0">Reporting Strategy</h5>
+                </div>
+                <ul class="list-unstyled mb-4">
+                    <li class="mb-3 d-flex align-items-start">
+                        <i class="fas fa-circle-check text-success me-3 mt-1 fs-6"></i>
+                        <span class="text-dark small">Record items that cannot be used in production because of expiration or damage during storage.</span>
+                    </li>
+                    <li class="mb-3 d-flex align-items-start">
+                        <i class="fas fa-circle-check text-success me-3 mt-1 fs-6"></i>
+                        <span class="text-dark small">This updates your warehouse inventory levels in real-time, preventing "ghost inventory" in the system.</span>
+                    </li>
+                    <li class="mb-3 d-flex align-items-start">
+                        <i class="fas fa-circle-check text-success me-3 mt-1 fs-6"></i>
+                        <span class="text-dark small">Ensure reasons are accurate for better procurement planning in the next cycle.</span>
+                    </li>
+                </ul>
+                <div class="mt-auto border-top border-primary border-opacity-10 pt-4">
+                    <h6 class="fw-bold text-dark mb-2">Item Details</h6>
+                    <div class="p-4 bg-white rounded-3">
+                        <div class="row g-3">
+                            <div class="col-6 border-end">
+                                <small class="text-muted text-uppercase d-block mb-1 fs-xs">Batch Category</small>
+                                <span class="fw-bold" id="catDisplay">—</span>
+                            </div>
+                            <div class="col-6 ps-4">
+                                <small class="text-muted text-uppercase d-block mb-1 fs-xs">Current Stock</small>
+                                <span class="fw-bold text-dark fs-5" id="stockDisplay">0.00</span> <span class="unit-text"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function updateStockInfo() {
+            const select = document.getElementById('inventorySelect');
+            const selectedOption = select.options[select.selectedIndex];
+            const stockDisplay = document.getElementById('stockDisplay');
+            const catDisplay = document.getElementById('catDisplay');
+            const unitDisplays = document.querySelectorAll('.unit-text');
+            const mainUnitDisplay = document.getElementById('unitDisplay');
+            const alertBox = document.getElementById('stockAlert');
+
+            if (selectedOption.value) {
+                const stock = parseFloat(selectedOption.getAttribute('data-stock'));
+                const unit = selectedOption.getAttribute('data-unit');
+                const category = selectedOption.getAttribute('data-category');
+
+                stockDisplay.innerText = stock.toFixed(2);
+                catDisplay.innerText = category;
+                mainUnitDisplay.innerText = unit;
+                unitDisplays.forEach(u => u.innerText = unit);
+                alertBox.classList.remove('d-none');
+                
+                calculateNewStock();
+            } else {
+                stockDisplay.innerText = "0.00";
+                catDisplay.innerText = "—";
+                mainUnitDisplay.innerText = "—";
+                unitDisplays.forEach(u => u.innerText = "");
+                alertBox.classList.add('d-none');
+            }
+        }
+
+        function calculateNewStock() {
+            const select = document.getElementById('inventorySelect');
+            if (!select.value) return;
+            
+            const currentStock = parseFloat(select.options[select.selectedIndex].getAttribute('data-stock'));
+            const wastageQty = parseFloat(document.getElementById('quantityInput').value) || 0;
+            const newStockDisplay = document.getElementById('newStockDisplay');
+            
+            const newStock = currentStock - wastageQty;
+            newStockDisplay.innerText = Math.max(0, newStock).toFixed(2);
+            
+            if (newStock < 0) {
+                newStockDisplay.classList.add('text-danger');
+                document.getElementById('quantityInput').classList.add('is-invalid');
+            } else {
+                newStockDisplay.classList.remove('text-danger');
+                document.getElementById('quantityInput').classList.remove('is-invalid');
+            }
+        }
+
+        document.getElementById('quantityInput').addEventListener('input', calculateNewStock);
+    </script>
+    <style>
+        .fs-xs { font-size: 0.65rem; font-weight: 800; letter-spacing: 1px; }
+    </style>
+}
