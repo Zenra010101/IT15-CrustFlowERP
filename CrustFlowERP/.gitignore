@@ -14,6 +14,6 @@ obj/
 Thumbs.db
 
 # App settings (DO NOT COMMIT SECRETS)
-
+appsettings.json
 appsettings.Development.json
 appsettings.Production.json
